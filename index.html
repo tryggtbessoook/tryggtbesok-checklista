@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Tryggtbesök Inköpslista</title></head>
+<body>
+  <h1>Inköpslista</h1>
+  <section>
+    <h2>Frukt & Grönt</h2>
+    <label><input type="checkbox" data-key="fruit_apple"> Äpple</label><br>
+    <label><input type="checkbox" data-key="fruit_banana"> Banan</label><br>
+  </section>
+  <!-- Fler kategorier... -->
+  <script>
+    // Ladda status från localStorage
+    document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      const key = cb.dataset.key;
+      cb.checked = localStorage.getItem(key)==='true';
+      cb.addEventListener('change', () => {
+        localStorage.setItem(key, cb.checked);
+      });
+    });
+  </script>
+</body>
+</html>
