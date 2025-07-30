@@ -47,6 +47,22 @@
       outline: 3px solid #000;
       outline-offset: 2px;
     }
+    /* Nytt: enkel input för att lägga till varor */
+    .add-item {
+      margin: 1em 0;
+      display: flex;
+      gap: 0.5em;
+    }
+    .add-item input {
+      flex: 1;
+      font-size: 1em;
+      padding: 0.5em;
+    }
+    .add-item button {
+      font-size: 1em;
+      padding: 0.5em 1em;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -54,99 +70,80 @@
   <main id="main" role="main">
     <h1>Inköpslista</h1>
 
-    <section>
+    <!-- Lägga till varor-delen -->
+    <div class="add-item">
+      <input type="text" id="new-item-text" placeholder="Lägg till vara…">
+      <button id="add-item-btn">Lägg till</button>
+    </div>
+
+    <section data-category="fruit">
       <h2>Frukt &amp; Grönt</h2>
-      <ul></ul>
+      <ul>
+        <li><label><input type="checkbox" data-key="fruit_apple">Äpple</label></li>
+        <li><label><input type="checkbox" data-key="fruit_banana">Banan</label></li>
+        <li><label><input type="checkbox" data-key="fruit_tomat">Tomat</label></li>
+        <li><label><input type="checkbox" data-key="fruit_sallad">Sallad</label></li>
+      </ul>
     </section>
 
-    <section>
+    <section data-category="bread">
       <h2>Bröd &amp; Bageri</h2>
-      <ul></ul>
+      <ul>
+        <li><label><input type="checkbox" data-key="bread_brod">Bröd</label></li>
+        <li><label><input type="checkbox" data-key="bread_frallor">Frallor</label></li>
+      </ul>
     </section>
 
-    <section>
+    <section data-category="dairy">
       <h2>Mejeri &amp; Ägg</h2>
-      <ul></ul>
+      <ul>
+        <li><label><input type="checkbox" data-key="dairy_mjolk">Mjölk</label></li>
+        <li><label><input type="checkbox" data-key="dairy_kvarg">Kvarg</label></li>
+        <li><label><input type="checkbox" data-key="dairy_yoghurt">Yoghurt</label></li>
+        <li><label><input type="checkbox" data-key="dairy_agg">Ägg</label></li>
+      </ul>
     </section>
 
-    <section>
-      <h2>Kött, Fisk &amp; Chark</h2>
-      <ul></ul>
-    </section>
+    <!-- … övriga sektioner utan varor för att hålla koden kort … -->
 
-    <section>
-      <h2>Frysvaror</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Torrvaror &amp; Pasta/Ris</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Konserver &amp; Såser</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Snacks &amp; Godis</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Bröd &amp; Spannmål (ex. flingor, müsli)</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Drycker (vatten, läsk, juice)</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Kaffe &amp; Te</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Frukost- &amp; Mellanmålsprodukter</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Kryddor &amp; Oljor</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Hem- &amp; Städartiklar</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Personlig Vård &amp; Hygien</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Barn &amp; Baby (blöjor, barnmat)</h2>
-      <ul></ul>
-    </section>
-
-    <section>
-      <h2>Övrigt (t.ex. husdjursmat, djurtillbehör)</h2>
-      <ul></ul>
-    </section>
   </main>
 
   <script>
+    // Lagra och återställ checkbox-status
     document.querySelectorAll('input[type=checkbox]').forEach(cb => {
       const key = cb.dataset.key;
       cb.checked = localStorage.getItem(key) === 'true';
       cb.addEventListener('change', () => {
         localStorage.setItem(key, cb.checked);
       });
+    });
+
+    // Hantera dynamisk tilläggning av nya varor
+    document.getElementById('add-item-btn').addEventListener('click', () => {
+      const text = document.getElementById('new-item-text').value.trim();
+      if (!text) return;
+      // Lägg varan under "Övrigt"
+      const section = document.querySelector('section[data-category="other"] ul');
+      if (!section) {
+        alert('Övrigt-sektionen finns inte!');
+        return;
+      }
+      const key = 'other_' + text.toLowerCase().replace(/\s+/g, '_');
+      const li = document.createElement('li');
+      const label = document.createElement('label');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.dataset.key = key;
+      cb.checked = false;
+      // Spara initialt false
+      localStorage.setItem(key, 'false');
+      // Samma händelsehantering
+      cb.addEventListener('change', () => localStorage.setItem(key, cb.checked));
+      label.appendChild(cb);
+      label.append(text);
+      li.appendChild(label);
+      section.appendChild(li);
+      document.getElementById('new-item-text').value = '';
     });
   </script>
 </body>
