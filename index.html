@@ -10,18 +10,6 @@
       font-family: sans-serif;
       line-height: 1.4;
     }
-    .skip-link {
-      position: absolute;
-      top: -40px;
-      left: 0;
-      background: #000;
-      color: #fff;
-      padding: 8px;
-      z-index: 100;
-    }
-    .skip-link:focus {
-      top: 0;
-    }
     h1, h2 {
       margin-top: 1em;
       margin-bottom: 0.5em;
@@ -31,30 +19,31 @@
       padding-top: 1em;
     }
     label {
-      display: block;
-      padding: 0.75em;
+      display: inline-flex;
+      align-items: center;
+      padding: 0.75em 0;
       font-size: 1.4em;
       cursor: pointer;
     }
     input[type="checkbox"] {
       width: 2em;
       height: 2em;
-      vertical-align: middle;
       margin-right: 0.75em;
       accent-color: #28a745;
     }
-    label:focus-within {
-      outline: 3px solid #000;
-      outline-offset: 2px;
+    button.remove {
+      margin-left: 1em;
+      font-size: 1em;
+      cursor: pointer;
     }
-    /* Nytt: enkel input för att lägga till varor */
+    /* Lägg till-form */
     .add-item {
       margin: 1em 0;
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
       gap: 0.5em;
     }
-    .add-item input {
-      flex: 1;
+    .add-item input, .add-item select {
       font-size: 1em;
       padding: 0.5em;
     }
@@ -66,50 +55,208 @@
   </style>
 </head>
 <body>
-  <a href="#main" class="skip-link">Hoppa till innehåll</a>
-  <main id="main" role="main">
-    <h1>Inköpslista</h1>
+  <h1>Inköpslista</h1>
 
-    <!-- Lägga till varor-delen -->
-    <div class="add-item">
-      <input type="text" id="new-item-text" placeholder="Lägg till vara…">
-      <button id="add-item-btn">Lägg till</button>
-    </div>
+  <div class="add-item">
+    <select id="category-select">
+      <option value="fruit">Frukt &amp; Grönt</option>
+      <option value="bread">Bröd &amp; Bageri</option>
+      <option value="dairy">Mejeri &amp; Ägg</option>
+      <option value="meat">Kött, Fisk &amp; Chark</option>
+      <option value="frozen">Frysvaror</option>
+      <option value="dry">Torrvaror &amp; Pasta/Ris</option>
+      <option value="canned">Konserver &amp; Såser</option>
+      <option value="snacks">Snacks &amp; Godis</option>
+      <option value="cereal">Bröd &amp; Spannmål</option>
+      <option value="drinks">Drycker</option>
+      <option value="coffee">Kaffe &amp; Te</option>
+      <option value="breakfast">Frukost- &amp; Mellanmålsprodukter</option>
+      <option value="spices">Kryddor &amp; Oljor</option>
+      <option value="household">Hem- &amp; Städartiklar</option>
+      <option value="personal">Personlig Vård &amp; Hygien</option>
+      <option value="baby">Barn &amp; Baby</option>
+      <option value="other">Övrigt</option>
+    </select>
+    <input type="text" id="new-item-text" placeholder="Lägg till vara…">
+    <button id="add-item-btn">Lägg till</button>
+  </div>
 
-    <section data-category="fruit">
+  <main id="main">
+
+    <section data-cat="fruit">
       <h2>Frukt &amp; Grönt</h2>
-      <ul>
-        <li><label><input type="checkbox" data-key="fruit_apple">Äpple</label></li>
-        <li><label><input type="checkbox" data-key="fruit_banana">Banan</label></li>
-        <li><label><input type="checkbox" data-key="fruit_tomat">Tomat</label></li>
-        <li><label><input type="checkbox" data-key="fruit_sallad">Sallad</label></li>
+      <ul id="list-fruit">
+        <li>
+          <label><input type="checkbox" data-key="fruit_apple">Äpple</label>
+          <button class="remove" aria-label="Ta bort Äpple">✕</button>
+        </li>
       </ul>
     </section>
 
-    <section data-category="bread">
+    <section data-cat="bread">
       <h2>Bröd &amp; Bageri</h2>
-      <ul>
-        <li><label><input type="checkbox" data-key="bread_brod">Bröd</label></li>
-        <li><label><input type="checkbox" data-key="bread_frallor">Frallor</label></li>
+      <ul id="list-bread">
+        <li>
+          <label><input type="checkbox" data-key="bread_brod">Bröd</label>
+          <button class="remove" aria-label="Ta bort Bröd">✕</button>
+        </li>
       </ul>
     </section>
 
-    <section data-category="dairy">
+    <section data-cat="dairy">
       <h2>Mejeri &amp; Ägg</h2>
-      <ul>
-        <li><label><input type="checkbox" data-key="dairy_mjolk">Mjölk</label></li>
-        <li><label><input type="checkbox" data-key="dairy_kvarg">Kvarg</label></li>
-        <li><label><input type="checkbox" data-key="dairy_yoghurt">Yoghurt</label></li>
-        <li><label><input type="checkbox" data-key="dairy_agg">Ägg</label></li>
+      <ul id="list-dairy">
+        <li>
+          <label><input type="checkbox" data-key="dairy_mjolk">Mjölk</label>
+          <button class="remove" aria-label="Ta bort Mjölk">✕</button>
+        </li>
       </ul>
     </section>
 
-    <!-- … övriga sektioner utan varor för att hålla koden kort … -->
+    <section data-cat="meat">
+      <h2>Kött, Fisk &amp; Chark</h2>
+      <ul id="list-meat">
+        <li>
+          <label><input type="checkbox" data-key="meat_kott">Kött</label>
+          <button class="remove" aria-label="Ta bort Kött">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="frozen">
+      <h2>Frysvaror</h2>
+      <ul id="list-frozen">
+        <li>
+          <label><input type="checkbox" data-key="frozen_gronsaker">Grönsaker (frys)</label>
+          <button class="remove" aria-label="Ta bort Grönsaker (frys)">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="dry">
+      <h2>Torrvaror &amp; Pasta/Ris</h2>
+      <ul id="list-dry">
+        <li>
+          <label><input type="checkbox" data-key="dry_goods_pasta">Pasta</label>
+          <button class="remove" aria-label="Ta bort Pasta">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="canned">
+      <h2>Konserver &amp; Såser</h2>
+      <ul id="list-canned">
+        <li>
+          <label><input type="checkbox" data-key="canned_konserver">Konserver</label>
+          <button class="remove" aria-label="Ta bort Konserver">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="snacks">
+      <h2>Snacks &amp; Godis</h2>
+      <ul id="list-snacks">
+        <li>
+          <label><input type="checkbox" data-key="snacks_godis">Godis</label>
+          <button class="remove" aria-label="Ta bort Godis">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="cereal">
+      <h2>Bröd &amp; Spannmål (ex. flingor, müsli)</h2>
+      <ul id="list-cereal">
+        <li>
+          <label><input type="checkbox" data-key="cereal_flingor">Flingor</label>
+          <button class="remove" aria-label="Ta bort Flingor">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="drinks">
+      <h2>Drycker (vatten, läsk, juice)</h2>
+      <ul id="list-drinks">
+        <li>
+          <label><input type="checkbox" data-key="drinks_vatten">Vatten</label>
+          <button class="remove" aria-label="Ta bort Vatten">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="coffee">
+      <h2>Kaffe &amp; Te</h2>
+      <ul id="list-coffee">
+        <li>
+          <label><input type="checkbox" data-key="coffee_kaffe">Kaffe</label>
+          <button class="remove" aria-label="Ta bort Kaffe">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="breakfast">
+      <h2>Frukost- &amp; Mellanmålsprodukter</h2>
+      <ul id="list-breakfast">
+        <li>
+          <label><input type="checkbox" data-key="breakfast_yoghurt">Yoghurt</label>
+          <button class="remove" aria-label="Ta bort Yoghurt">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="spices">
+      <h2>Kryddor &amp; Oljor</h2>
+      <ul id="list-spices">
+        <li>
+          <label><input type="checkbox" data-key="spices_salt">Salt</label>
+          <button class="remove" aria-label="Ta bort Salt">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="household">
+      <h2>Hem- &amp; Städartiklar</h2>
+      <ul id="list-household">
+        <li>
+          <label><input type="checkbox" data-key="household_toalettpapper">Toalettpapper</label>
+          <button class="remove" aria-label="Ta bort Toalettpapper">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="personal">
+      <h2>Personlig Vård &amp; Hygien</h2>
+      <ul id="list-personal">
+        <li>
+          <label><input type="checkbox" data-key="personal_tandkram">Tandkräm</label>
+          <button class="remove" aria-label="Ta bort Tandkräm">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="baby">
+      <h2>Barn &amp; Baby (blöjor, barnmat)</h2>
+      <ul id="list-baby">
+        <li>
+          <label><input type="checkbox" data-key="baby_bljor">Blöjor</label>
+          <button class="remove" aria-label="Ta bort Blöjor">✕</button>
+        </li>
+      </ul>
+    </section>
+
+    <section data-cat="other">
+      <h2>Övrigt (t.ex. husdjursmat, djurtillbehör)</h2>
+      <ul id="list-other">
+        <li>
+          <label><input type="checkbox" data-key="other_none">Inga extra varor</label>
+          <button class="remove" aria-label="Ta bort Inga extra varor">✕</button>
+        </li>
+      </ul>
+    </section>
 
   </main>
 
   <script>
-    // Lagra och återställ checkbox-status
+    // Återställ checkboxar
     document.querySelectorAll('input[type=checkbox]').forEach(cb => {
       const key = cb.dataset.key;
       cb.checked = localStorage.getItem(key) === 'true';
@@ -118,32 +265,75 @@
       });
     });
 
-    // Hantera dynamisk tilläggning av nya varor
-    document.getElementById('add-item-btn').addEventListener('click', () => {
-      const text = document.getElementById('new-item-text').value.trim();
-      if (!text) return;
-      // Lägg varan under "Övrigt"
-      const section = document.querySelector('section[data-category="other"] ul');
-      if (!section) {
-        alert('Övrigt-sektionen finns inte!');
-        return;
-      }
-      const key = 'other_' + text.toLowerCase().replace(/\s+/g, '_');
+    // Skapa och pusha nya rader
+    const categoryMap = {
+      fruit: 'list-fruit',
+      bread: 'list-bread',
+      dairy: 'list-dairy',
+      meat: 'list-meat',
+      frozen: 'list-frozen',
+      dry: 'list-dry',
+      canned: 'list-canned',
+      snacks: 'list-snacks',
+      cereal: 'list-cereal',
+      drinks: 'list-drinks',
+      coffee: 'list-coffee',
+      breakfast: 'list-breakfast',
+      spices: 'list-spices',
+      household: 'list-household',
+      personal: 'list-personal',
+      baby: 'list-baby',
+      other: 'list-other'
+    };
+
+    function createListItem(text, key, ul) {
       const li = document.createElement('li');
       const label = document.createElement('label');
       const cb = document.createElement('input');
       cb.type = 'checkbox';
       cb.dataset.key = key;
-      cb.checked = false;
-      // Spara initialt false
-      localStorage.setItem(key, 'false');
-      // Samma händelsehantering
+      cb.checked = localStorage.getItem(key) === 'true';
       cb.addEventListener('change', () => localStorage.setItem(key, cb.checked));
       label.appendChild(cb);
       label.append(text);
       li.appendChild(label);
-      section.appendChild(li);
-      document.getElementById('new-item-text').value = '';
+      const btn = document.createElement('button');
+      btn.textContent = '✕';
+      btn.className = 'remove';
+      btn.setAttribute('aria-label', 'Ta bort ' + text);
+      btn.addEventListener('click', () => {
+        ul.removeChild(li);
+        localStorage.removeItem(key);
+      });
+      li.appendChild(btn);
+      ul.appendChild(li);
+    }
+
+    document.getElementById('add-item-btn').addEventListener('click', () => {
+      const textInput = document.getElementById('new-item-text');
+      const text = textInput.value.trim();
+      if (!text) return;
+      const cat = document.getElementById('category-select').value;
+      const key = cat + '_' + text.toLowerCase().replace(/\s+/g, '_');
+      const ul = document.getElementById(categoryMap[cat]);
+      localStorage.setItem(key, 'false');
+      createListItem(text, key, ul);
+      textInput.value = '';
+    });
+
+    // Ladda befintliga "other"-varor
+    window.addEventListener('DOMContentLoaded', () => {
+      Object.keys(localStorage).forEach(key => {
+        const [cat, ...rest] = key.split('_');
+        if (categoryMap[cat]) {
+          const text = rest.join(' ').replace(/_/g, ' ');
+          const ul = document.getElementById(categoryMap[cat]);
+          // Skippa om redan existerar i DOM
+          if (![...ul.children].some(li => li.querySelector('label').textContent.trim() === text)) {
+            createListItem(text, key, ul);
+          }
+        }
+      });
     });
   </script>
 </body>
