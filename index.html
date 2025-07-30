@@ -32,16 +32,15 @@
     }
     label {
       display: block;
-      padding: 0.5em;
-      font-size: 1.2em;
+      padding: 0.75em;
+      font-size: 1.4em; /* Förstorad text */
       cursor: pointer;
     }
     input[type="checkbox"] {
-      width: 1.5em;
-      height: 1.5em;
+      width: 2em;    /* Förstorad kryssruta */
+      height: 2em;   /* Förstorad kryssruta */
       vertical-align: middle;
-      margin-right: 0.5em;
-      /* Grön kryssmarkering */
+      margin-right: 0.75em;
       accent-color: #28a745;
     }
     label:focus-within {
@@ -133,7 +132,6 @@
   </main>
 
   <script>
-    // Ladda och spara status i localStorage per individ
     document.querySelectorAll('input[type=checkbox]').forEach(cb => {
       const key = cb.dataset.key;
       cb.checked = localStorage.getItem(key) === 'true';
