@@ -1,19 +1,142 @@
 <!DOCTYPE html>
 <html lang="sv">
-<head><meta charset="utf-8"><title>Tryggtbesök Inköpslista</title></head>
+<head>
+  <meta charset="utf-8">
+  <title>Tryggtbesök Inköpslista</title>
+  <style>
+    body {
+      max-width: 600px;
+      margin: 1em auto;
+      font-family: sans-serif;
+      line-height: 1.4;
+    }
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    h1, h2 {
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+    }
+    section + section {
+      border-top: 1px solid #ccc;
+      padding-top: 1em;
+    }
+    label {
+      display: block;
+      padding: 0.5em;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+    input[type="checkbox"] {
+      width: 1.5em;
+      height: 1.5em;
+      vertical-align: middle;
+      margin-right: 0.5em;
+      /* Grön kryssmarkering */
+      accent-color: #28a745;
+    }
+    label:focus-within {
+      outline: 3px solid #000;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
 <body>
-  <h1>Inköpslista</h1>
-  <section>
-    <h2>Frukt & Grönt</h2>
-    <label><input type="checkbox" data-key="fruit_apple"> Äpple</label><br>
-    <label><input type="checkbox" data-key="fruit_banana"> Banan</label><br>
-  </section>
-  <!-- Fler kategorier... -->
+  <a href="#main" class="skip-link">Hoppa till innehåll</a>
+  <main id="main" role="main">
+    <h1>Inköpslista</h1>
+
+    <section>
+      <h2>Frukt &amp; Grönt</h2>
+      <ul>
+        <li><label><input type="checkbox" data-key="fruit_apple">Äpple</label></li>
+        <li><label><input type="checkbox" data-key="fruit_banana">Banan</label></li>
+        <li><label><input type="checkbox" data-key="fruit_tomat">Tomat</label></li>
+        <li><label><input type="checkbox" data-key="fruit_sallad">Sallad</label></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Bröd &amp; Mejeri</h2>
+      <ul>
+        <li><label><input type="checkbox" data-key="dairy_mjolk">Mjölk</label></li>
+        <li><label><input type="checkbox" data-key="dairy_kvarg">Kvarg</label></li>
+        <li><label><input type="checkbox" data-key="dairy_yoghurt">Yoghurt</label></li>
+        <li><label><input type="checkbox" data-key="bread_brod">Bröd</label></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Kött &amp; Fisk</h2>
+      <ul>
+        <li><label><input type="checkbox" data-key="meat_kott">Kött</label></li>
+        <li><label><input type="checkbox" data-key="meat_fisk">Fisk</label></li>
+        <li><label><input type="checkbox" data-key="meat_skaldjur">Skaldjur</label></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Torrvaror &amp; Konserver</h2>
+      <ul>
+        <li><label><input type="checkbox" data-key="dry_goods_pasta">Pasta</label></li>
+        <li><label><input type="checkbox" data-key="dry_goods_ris">Ris</label></li>
+        <li><label><input type="checkbox" data-key="dry_goods_bonor">Bönor</label></li>
+        <li><label><input type="checkbox" data-key="dry_goods_konserver">Konserver</label></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Frysvaror</h2>
+      <ul>
+        <li><label><input type="checkbox" data-key="frozen_gronsaker">Grönsaker (frys)</label></li>
+        <li><label><input type="checkbox" data-key="frozen_brod">Bröd (frys)</label></li>
+        <li><label><input type="checkbox" data-key="frozen_kyckling">Kyckling (frys)</label></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Drycker</h2>
+      <ul>
+        <li><label><input type="checkbox" data-key="drinks_vatten">Vatten</label></li>
+        <li><label><input type="checkbox" data-key="drinks_lattdryck">Lättdryck</label></li>
+        <li><label><input type="checkbox" data-key="drinks_juice">Juice</label></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Godis &amp; Snacks</h2>
+      <ul>
+        <li><label><input type="checkbox" data-key="snacks_godis">Godis</label></li>
+        <li><label><input type="checkbox" data-key="snacks_chips">Chips</label></li>
+        <li><label><input type="checkbox" data-key="snacks_notter">Nötter</label></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Hygien &amp; Hushåll</h2>
+      <ul>
+        <li><label><input type="checkbox" data-key="household_toalettpapper">Toalettpapper</label></li>
+        <li><label><input type="checkbox" data-key="household_diskmedel">Diskmedel</label></li>
+        <li><label><input type="checkbox" data-key="household_sopborste">Sopborste</label></li>
+      </ul>
+    </section>
+
+  </main>
+
   <script>
-    // Ladda status från localStorage
+    // Ladda och spara status i localStorage per individ
     document.querySelectorAll('input[type=checkbox]').forEach(cb => {
       const key = cb.dataset.key;
-      cb.checked = localStorage.getItem(key)==='true';
+      cb.checked = localStorage.getItem(key) === 'true';
       cb.addEventListener('change', () => {
         localStorage.setItem(key, cb.checked);
       });
