@@ -1,108 +1,190 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <title>Tryggtbesök Inköpslista</title>
   <style>
     body {
-      max-width: 600px;
-      margin: 1em auto;
+      max-width: 700px;
+      margin: 2em auto;
       font-family: sans-serif;
       line-height: 1.4;
     }
     h2 {
-      background: #f2f2f2;
-      padding: 0.5em;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      margin-top: 2em;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 0.2em;
+    }
+    .category {
+      margin-bottom: 1.5em;
     }
     ul {
-      list-style-type: none;
-      padding-left: 0;
-      margin-top: 0.5em;
+      list-style: none;
+      padding-left: 1em;
     }
     li {
-      margin-bottom: 0.6em;
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
+      margin: 0.5em 0;
     }
-    .checkbox {
-      width: 1.5em;
-      height: 1.5em;
+    input[type="checkbox"] {
+      transform: scale(1.3);
       accent-color: green;
-      cursor: pointer;
+      margin-right: 0.5em;
+    }
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3em;
     }
     button {
-      margin-left: auto;
-      background-color: #e74c3c;
+      font-size: 1em;
+      padding: 0.6em 1.2em;
       border: none;
-      color: white;
-      padding: 0.2em 0.6em;
-      border-radius: 6px;
+      background-color: #ddd;
       cursor: pointer;
-      font-size: 0.8em;
+      border-radius: 8px;
+    }
+    .hidden {
+      display: none;
+    }
+    [contenteditable="true"] {
+      outline: none;
+      padding: 2px 4px;
     }
   </style>
 </head>
 <body>
+  <div class="category" data-index="0">
+    <h2 contenteditable="true">Frukt & Grönt</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Bananer</li>
+      <li contenteditable="true"><input type="checkbox" /> Äpplen</li>
+    </ul>
+  </div>
+  <div class="category" data-index="1">
+    <h2 contenteditable="true">Bröd & Bageri</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Färskt bröd</li>
+    </ul>
+  </div>
+  <div class="category" data-index="2">
+    <h2 contenteditable="true">Mejeri & Ägg</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Mjölk</li>
+    </ul>
+  </div>
+  <div class="category" data-index="3">
+    <h2 contenteditable="true">Kött, Fisk & Chark</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Kyckling</li>
+    </ul>
+  </div>
+  <div class="category" data-index="4">
+    <h2 contenteditable="true">Frysvaror</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Frysta bär</li>
+    </ul>
+  </div>
+  <div class="category" data-index="5">
+    <h2 contenteditable="true">Torrvaror & Pasta/Ris</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Pasta</li>
+    </ul>
+  </div>
+  <div class="category" data-index="6">
+    <h2 contenteditable="true">Konserver & Såser</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Krossade tomater</li>
+    </ul>
+  </div>
+  <div class="category" data-index="7">
+    <h2 contenteditable="true">Snacks & Godis</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Chips</li>
+    </ul>
+  </div>
+  <div class="category" data-index="8">
+    <h2 contenteditable="true">Bröd & Spannmål (ex. flingor, müsli)</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Flingor</li>
+    </ul>
+  </div>
+  <div class="category" data-index="9">
+    <h2 contenteditable="true">Drycker (vatten, läsk, juice)</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Apelsinjuice</li>
+    </ul>
+  </div>
+  <div class="category" data-index="10">
+    <h2 contenteditable="true">Kaffe & Te</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Kaffe</li>
+    </ul>
+  </div>
+  <div class="category" data-index="11">
+    <h2 contenteditable="true">Frukost- & Mellanmålsprodukter</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Yoghurt</li>
+    </ul>
+  </div>
+  <div class="category" data-index="12">
+    <h2 contenteditable="true">Kryddor & Oljor</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Olivolja</li>
+    </ul>
+  </div>
+  <div class="category" data-index="13">
+    <h2 contenteditable="true">Hem- & Städartiklar</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Diskmedel</li>
+    </ul>
+  </div>
+  <div class="category" data-index="14">
+    <h2 contenteditable="true">Personlig Vård & Hygien</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Tandkräm</li>
+    </ul>
+  </div>
+  <div class="category" data-index="15">
+    <h2 contenteditable="true">Barn & Baby (blöjor, barnmat)</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Blöjor</li>
+    </ul>
+  </div>
+  <div class="category" data-index="16">
+    <h2 contenteditable="true">Övrigt (t.ex. husdjursmat, djurtillbehör)</h2>
+    <ul>
+      <li contenteditable="true"><input type="checkbox" /> Kattmat</li>
+    </ul>
+  </div>
 
-  <h1>Tryggtbesök – Inköpslista</h1>
-
-  <div id="shopping-list">
-    <!-- Kategorier och varor skapas här -->
+  <div class="navigation">
+    <button onclick="prevCategory()">← Föregående</button>
+    <button onclick="nextCategory()">Nästa →</button>
   </div>
 
   <script>
-    const data = {
-      "Frukt & Grönt": ["Äpplen", "Bananer", "Tomater"],
-      "Bröd & Bageri": ["Ljust bröd", "Frallor"],
-      "Mejeri & Ägg": ["Mjölk", "Yoghurt", "Ägg"],
-      "Kött, Fisk & Chark": ["Köttbullar", "Kycklingfilé"],
-      "Frysvaror": ["Frysta bär", "Pommes frites"],
-      "Torrvaror & Pasta/Ris": ["Spaghetti", "Ris", "Bulgur"],
-      "Konserver & Såser": ["Krossade tomater", "Majsburk"],
-      "Snacks & Godis": ["Chips", "Chokladkaka"],
-      "Bröd & Spannmål (ex. flingor, müsli)": ["Havregryn", "Flingor"],
-      "Drycker (vatten, läsk, juice)": ["Apelsinjuice", "Mineralvatten"],
-      "Kaffe & Te": ["Bryggkaffe", "Svart te"],
-      "Frukost- & Mellanmålsprodukter": ["Knäckebröd", "Proteinbar"],
-      "Kryddor & Oljor": ["Salt", "Olivolja"],
-      "Hem- & Städartiklar": ["Diskmedel", "Tvättmedel"],
-      "Personlig Vård & Hygien": ["Tandkräm", "Deodorant"],
-      "Barn & Baby (blöjor, barnmat)": ["Blöjor", "Barnmatburk"],
-      "Övrigt (t.ex. husdjursmat, djurtillbehör)": ["Kattmat", "Hundgodis"]
-    };
+    const categories = document.querySelectorAll(".category");
+    let current = 0;
 
-    const container = document.getElementById("shopping-list");
-
-    for (const [category, items] of Object.entries(data)) {
-      const section = document.createElement("section");
-      const heading = document.createElement("h2");
-      heading.innerHTML = `
-        ${category}
-        <button onclick="this.parentElement.parentElement.remove()">Ta bort kategori</button>
-      `;
-      section.appendChild(heading);
-
-      const ul = document.createElement("ul");
-
-      items.forEach(item => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <input type="checkbox" class="checkbox" aria-label="${item}">
-          <span>${item}</span>
-          <button onclick="this.parentElement.remove()">Ta bort</button>
-        `;
-        ul.appendChild(li);
+    function showCategory(index) {
+      categories.forEach((cat, i) => {
+        cat.style.display = i === index ? "block" : "none";
       });
-
-      section.appendChild(ul);
-      container.appendChild(section);
     }
-  </script>
 
+    function nextCategory() {
+      if (current < categories.length - 1) current++;
+      showCategory(current);
+    }
+
+    function prevCategory() {
+      if (current > 0) current--;
+      showCategory(current);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      showCategory(current);
+    });
+  </script>
 </body>
 </html>
