@@ -5,218 +5,104 @@
   <title>Tryggtbesök Inköpslista</title>
   <style>
     body {
-      font-family: sans-serif;
-      max-width: 700px;
+      max-width: 600px;
       margin: 1em auto;
+      font-family: sans-serif;
       line-height: 1.4;
     }
-
-    .category {
-      margin-bottom: 1.5em;
-      padding: 1em;
-      border: 1px solid #ccc;
+    h2 {
+      background: #f2f2f2;
+      padding: 0.5em;
       border-radius: 8px;
-    }
-
-    .category h2 {
-      margin: 0 0 0.5em;
-    }
-
-    .item {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
     }
-
-    .item input[type="checkbox"] {
-      margin-right: 8px;
-    }
-
-    .editable {
-      border: none;
-      background: none;
-      outline: none;
-      padding: 2px 4px;
-      min-width: 50px;
-    }
-
-    .editable:focus {
-      background-color: #eef;
-      border-bottom: 1px solid #aaa;
-    }
-
-    .toolbar {
-      margin-bottom: 1em;
-      display: flex;
-      gap: 1em;
-    }
-
-    button {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background-color: #007acc;
-      color: white;
-      font-weight: bold;
-    }
-
-    button:hover {
-      background-color: #005fa3;
-    }
-
-    .add-controls {
+    ul {
+      list-style-type: none;
+      padding-left: 0;
       margin-top: 0.5em;
     }
-
-    .add-controls input {
-      padding: 4px;
-      margin-right: 0.5em;
+    li {
+      margin-bottom: 0.6em;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .checkbox {
+      width: 1.5em;
+      height: 1.5em;
+      accent-color: green;
+      cursor: pointer;
+    }
+    button {
+      margin-left: auto;
+      background-color: #e74c3c;
+      border: none;
+      color: white;
+      padding: 0.2em 0.6em;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8em;
     }
   </style>
 </head>
 <body>
 
-  <div class="toolbar">
-    <button onclick="undo()">↶ Ångra</button>
-    <button onclick="redo()">↷ Gör om</button>
-    <button onclick="addCategory()">+ Lägg till kategori</button>
+  <h1>Tryggtbesök – Inköpslista</h1>
+
+  <div id="shopping-list">
+    <!-- Kategorier och varor skapas här -->
   </div>
 
-  <div id="listContainer"></div>
-
   <script>
-    const defaultData = [
-      {
-        category: "Frukt och grönt",
-        items: ["Banan", "Äpple", "Morot"]
-      },
-      {
-        category: "Mejeri",
-        items: ["Mjölk", "Smör", "Ost"]
-      },
-      {
-        category: "Bröd",
-        items: ["Formfranska", "Knäckebröd"]
-      }
-    ];
+    const data = {
+      "Frukt & Grönt": ["Äpplen", "Bananer", "Tomater"],
+      "Bröd & Bageri": ["Ljust bröd", "Frallor"],
+      "Mejeri & Ägg": ["Mjölk", "Yoghurt", "Ägg"],
+      "Kött, Fisk & Chark": ["Köttbullar", "Kycklingfilé"],
+      "Frysvaror": ["Frysta bär", "Pommes frites"],
+      "Torrvaror & Pasta/Ris": ["Spaghetti", "Ris", "Bulgur"],
+      "Konserver & Såser": ["Krossade tomater", "Majsburk"],
+      "Snacks & Godis": ["Chips", "Chokladkaka"],
+      "Bröd & Spannmål (ex. flingor, müsli)": ["Havregryn", "Flingor"],
+      "Drycker (vatten, läsk, juice)": ["Apelsinjuice", "Mineralvatten"],
+      "Kaffe & Te": ["Bryggkaffe", "Svart te"],
+      "Frukost- & Mellanmålsprodukter": ["Knäckebröd", "Proteinbar"],
+      "Kryddor & Oljor": ["Salt", "Olivolja"],
+      "Hem- & Städartiklar": ["Diskmedel", "Tvättmedel"],
+      "Personlig Vård & Hygien": ["Tandkräm", "Deodorant"],
+      "Barn & Baby (blöjor, barnmat)": ["Blöjor", "Barnmatburk"],
+      "Övrigt (t.ex. husdjursmat, djurtillbehör)": ["Kattmat", "Hundgodis"]
+    };
 
-    let history = [];
-    let historyIndex = -1;
-    const container = document.getElementById('listContainer');
+    const container = document.getElementById("shopping-list");
 
-    function saveState() {
-      history = history.slice(0, historyIndex + 1);
-      history.push(container.innerHTML);
-      historyIndex++;
-    }
-
-    function undo() {
-      if (historyIndex > 0) {
-        historyIndex--;
-        container.innerHTML = history[historyIndex];
-        attachEvents();
-      }
-    }
-
-    function redo() {
-      if (historyIndex < history.length - 1) {
-        historyIndex++;
-        container.innerHTML = history[historyIndex];
-        attachEvents();
-      }
-    }
-
-    function createEditableElement(tag, text, className) {
-      const el = document.createElement(tag);
-      el.contentEditable = true;
-      el.className = className;
-      el.textContent = text;
-      el.addEventListener("input", saveState);
-      return el;
-    }
-
-    function addItem(containerElement) {
-      const input = containerElement.querySelector(".new-item");
-      const itemText = input.value.trim();
-      if (!itemText) return;
-      const itemDiv = document.createElement("div");
-      itemDiv.className = "item";
-      itemDiv.innerHTML = `
-        <input type="checkbox">
-        <span class="editable" contenteditable="true">${itemText}</span>
+    for (const [category, items] of Object.entries(data)) {
+      const section = document.createElement("section");
+      const heading = document.createElement("h2");
+      heading.innerHTML = `
+        ${category}
+        <button onclick="this.parentElement.parentElement.remove()">Ta bort kategori</button>
       `;
-      containerElement.insertBefore(itemDiv, containerElement.querySelector(".add-controls"));
-      input.value = "";
-      saveState();
-    }
+      section.appendChild(heading);
 
-    function addCategory() {
-      const categoryDiv = document.createElement("div");
-      categoryDiv.className = "category";
+      const ul = document.createElement("ul");
 
-      const header = createEditableElement("h2", "Ny kategori", "editable");
-
-      const itemContainer = document.createElement("div");
-
-      const controls = document.createElement("div");
-      controls.className = "add-controls";
-      controls.innerHTML = `
-        <input class="new-item" type="text" placeholder="Ny vara" onkeydown="if(event.key==='Enter'){event.preventDefault(); addItem(this.closest('.category'))}">
-        <button onclick="addItem(this.closest('.category'))">+ Lägg till vara</button>
-      `;
-
-      categoryDiv.appendChild(header);
-      categoryDiv.appendChild(itemContainer);
-      categoryDiv.appendChild(controls);
-
-      container.appendChild(categoryDiv);
-      saveState();
-    }
-
-    function renderList(data) {
-      container.innerHTML = "";
-      data.forEach(section => {
-        const categoryDiv = document.createElement("div");
-        categoryDiv.className = "category";
-
-        const header = createEditableElement("h2", section.category, "editable");
-
-        const itemContainer = document.createElement("div");
-
-        section.items.forEach(item => {
-          const itemDiv = document.createElement("div");
-          itemDiv.className = "item";
-          itemDiv.innerHTML = `
-            <input type="checkbox">
-            <span class="editable" contenteditable="true">${item}</span>
-          `;
-          itemContainer.appendChild(itemDiv);
-        });
-
-        const controls = document.createElement("div");
-        controls.className = "add-controls";
-        controls.innerHTML = `
-          <input class="new-item" type="text" placeholder="Ny vara" onkeydown="if(event.key==='Enter'){event.preventDefault(); addItem(this.closest('.category'))}">
-          <button onclick="addItem(this.closest('.category'))">+ Lägg till vara</button>
+      items.forEach(item => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <input type="checkbox" class="checkbox" aria-label="${item}">
+          <span>${item}</span>
+          <button onclick="this.parentElement.remove()">Ta bort</button>
         `;
-
-        categoryDiv.appendChild(header);
-        categoryDiv.appendChild(itemContainer);
-        categoryDiv.appendChild(controls);
-        container.appendChild(categoryDiv);
+        ul.appendChild(li);
       });
-      saveState();
-    }
 
-    function attachEvents() {
-      const editables = document.querySelectorAll('.editable');
-      editables.forEach(el => {
-        el.addEventListener("input", saveState);
-      });
+      section.appendChild(ul);
+      container.appendChild(section);
     }
-
-    renderList(defaultData);
   </script>
+
 </body>
 </html>
