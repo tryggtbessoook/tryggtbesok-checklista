@@ -1,190 +1,179 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>Tryggtbesök Inköpslista</title>
   <style>
     body {
-      max-width: 700px;
-      margin: 2em auto;
+      max-width: 600px;
+      margin: 1em auto;
       font-family: sans-serif;
       line-height: 1.4;
+      padding: 1em;
+      background: #f9f9f9;
     }
+
     h2 {
-      margin-top: 2em;
-      border-bottom: 2px solid #ccc;
-      padding-bottom: 0.2em;
+      cursor: pointer;
+      background: #e0e0e0;
+      padding: 0.5em;
+      border-radius: 8px;
+      margin-bottom: 0.2em;
     }
-    .category {
-      margin-bottom: 1.5em;
-    }
+
     ul {
       list-style: none;
       padding-left: 1em;
+      margin-bottom: 1em;
     }
+
     li {
-      margin: 0.5em 0;
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.2em;
     }
-    input[type="checkbox"] {
-      transform: scale(1.3);
-      accent-color: green;
+
+    li input[type="checkbox"] {
       margin-right: 0.5em;
     }
-    .navigation {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 3em;
-    }
-    button {
-      font-size: 1em;
-      padding: 0.6em 1.2em;
-      border: none;
-      background-color: #ddd;
-      cursor: pointer;
-      border-radius: 8px;
-    }
+
     .hidden {
       display: none;
     }
-    [contenteditable="true"] {
-      outline: none;
-      padding: 2px 4px;
+
+    .remove-btn {
+      margin-left: auto;
+      background: #d33;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 0.2em 0.5em;
+      cursor: pointer;
+    }
+
+    #undoRedoContainer {
+      position: fixed;
+      bottom: 1em;
+      right: 1em;
+      display: flex;
+      gap: 0.5em;
+    }
+
+    button.undo, button.redo {
+      background: #ccc;
+      border: none;
+      padding: 0.5em;
+      font-size: 1em;
+      border-radius: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="category" data-index="0">
-    <h2 contenteditable="true">Frukt & Grönt</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Bananer</li>
-      <li contenteditable="true"><input type="checkbox" /> Äpplen</li>
-    </ul>
-  </div>
-  <div class="category" data-index="1">
-    <h2 contenteditable="true">Bröd & Bageri</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Färskt bröd</li>
-    </ul>
-  </div>
-  <div class="category" data-index="2">
-    <h2 contenteditable="true">Mejeri & Ägg</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Mjölk</li>
-    </ul>
-  </div>
-  <div class="category" data-index="3">
-    <h2 contenteditable="true">Kött, Fisk & Chark</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Kyckling</li>
-    </ul>
-  </div>
-  <div class="category" data-index="4">
-    <h2 contenteditable="true">Frysvaror</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Frysta bär</li>
-    </ul>
-  </div>
-  <div class="category" data-index="5">
-    <h2 contenteditable="true">Torrvaror & Pasta/Ris</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Pasta</li>
-    </ul>
-  </div>
-  <div class="category" data-index="6">
-    <h2 contenteditable="true">Konserver & Såser</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Krossade tomater</li>
-    </ul>
-  </div>
-  <div class="category" data-index="7">
-    <h2 contenteditable="true">Snacks & Godis</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Chips</li>
-    </ul>
-  </div>
-  <div class="category" data-index="8">
-    <h2 contenteditable="true">Bröd & Spannmål (ex. flingor, müsli)</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Flingor</li>
-    </ul>
-  </div>
-  <div class="category" data-index="9">
-    <h2 contenteditable="true">Drycker (vatten, läsk, juice)</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Apelsinjuice</li>
-    </ul>
-  </div>
-  <div class="category" data-index="10">
-    <h2 contenteditable="true">Kaffe & Te</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Kaffe</li>
-    </ul>
-  </div>
-  <div class="category" data-index="11">
-    <h2 contenteditable="true">Frukost- & Mellanmålsprodukter</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Yoghurt</li>
-    </ul>
-  </div>
-  <div class="category" data-index="12">
-    <h2 contenteditable="true">Kryddor & Oljor</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Olivolja</li>
-    </ul>
-  </div>
-  <div class="category" data-index="13">
-    <h2 contenteditable="true">Hem- & Städartiklar</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Diskmedel</li>
-    </ul>
-  </div>
-  <div class="category" data-index="14">
-    <h2 contenteditable="true">Personlig Vård & Hygien</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Tandkräm</li>
-    </ul>
-  </div>
-  <div class="category" data-index="15">
-    <h2 contenteditable="true">Barn & Baby (blöjor, barnmat)</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Blöjor</li>
-    </ul>
-  </div>
-  <div class="category" data-index="16">
-    <h2 contenteditable="true">Övrigt (t.ex. husdjursmat, djurtillbehör)</h2>
-    <ul>
-      <li contenteditable="true"><input type="checkbox" /> Kattmat</li>
-    </ul>
-  </div>
 
-  <div class="navigation">
-    <button onclick="prevCategory()">← Föregående</button>
-    <button onclick="nextCategory()">Nästa →</button>
+  <h1>Inköpslista</h1>
+
+  <div id="listContainer"></div>
+
+  <div id="undoRedoContainer">
+    <button class="undo" onclick="undo()">⟲</button>
+    <button class="redo" onclick="redo()">⟳</button>
   </div>
 
   <script>
-    const categories = document.querySelectorAll(".category");
-    let current = 0;
+    const data = {
+      "Frukt & Grönt": ["Äpplen", "Bananer", "Tomater"],
+      "Bröd & Bageri": ["Färskt bröd", "Frallor"],
+      "Mejeri & Ägg": ["Mjölk", "Ost", "Ägg"],
+      "Kött, Fisk & Chark": ["Kyckling", "Köttfärs", "Rökt lax"],
+      "Frysvaror": ["Frysta grönsaker", "Glass"],
+      "Torrvaror & Pasta/Ris": ["Spaghetti", "Ris", "Mjöl"],
+      "Konserver & Såser": ["Krossade tomater", "Majs på burk", "Pasta-sås"],
+      "Snacks & Godis": ["Chips", "Choklad"],
+      "Bröd & Spannmål (ex. flingor, müsli)": ["Havregryn", "Müsli"],
+      "Drycker (vatten, läsk, juice)": ["Mineralvatten", "Apelsinjuice"],
+      "Kaffe & Te": ["Bryggkaffe", "Svart te"],
+      "Frukost- & Mellanmålsprodukter": ["Yoghurt", "Proteinbars"],
+      "Kryddor & Oljor": ["Salt", "Peppar", "Olivolja"],
+      "Hem- & Städartiklar": ["Diskmedel", "Tvättmedel"],
+      "Personlig Vård & Hygien": ["Tandkräm", "Schampo"],
+      "Barn & Baby (blöjor, barnmat)": ["Blöjor", "Barnmat"],
+      "Övrigt (t.ex. husdjursmat, djurtillbehör)": ["Kattmat", "Hundben"]
+    };
 
-    function showCategory(index) {
-      categories.forEach((cat, i) => {
-        cat.style.display = i === index ? "block" : "none";
+    const listContainer = document.getElementById("listContainer");
+    let undoStack = [];
+    let redoStack = [];
+
+    function renderList() {
+      listContainer.innerHTML = '';
+      Object.keys(data).forEach(category => {
+        const categoryTitle = document.createElement("h2");
+        categoryTitle.textContent = category;
+        categoryTitle.onclick = () => toggleCategory(listElement);
+        listContainer.appendChild(categoryTitle);
+
+        const listElement = document.createElement("ul");
+        data[category].forEach((item, index) => {
+          const listItem = document.createElement("li");
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+
+          const label = document.createElement("span");
+          label.textContent = item;
+
+          const removeBtn = document.createElement("button");
+          removeBtn.textContent = "✕";
+          removeBtn.className = "remove-btn";
+          removeBtn.onclick = () => removeItem(category, index);
+
+          listItem.appendChild(checkbox);
+          listItem.appendChild(label);
+          listItem.appendChild(removeBtn);
+
+          listElement.appendChild(listItem);
+        });
+        listContainer.appendChild(listElement);
       });
     }
 
-    function nextCategory() {
-      if (current < categories.length - 1) current++;
-      showCategory(current);
+    function toggleCategory(listElement) {
+      listElement.classList.toggle("hidden");
     }
 
-    function prevCategory() {
-      if (current > 0) current--;
-      showCategory(current);
+    function removeItem(category, index) {
+      // Spara till undo
+      undoStack.push(JSON.parse(JSON.stringify(data)));
+      redoStack = [];
+
+      data[category].splice(index, 1);
+      renderList();
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      showCategory(current);
-    });
+    function undo() {
+      if (undoStack.length > 0) {
+        redoStack.push(JSON.parse(JSON.stringify(data)));
+        const lastState = undoStack.pop();
+        Object.keys(data).forEach(cat => {
+          data[cat] = lastState[cat] || [];
+        });
+        renderList();
+      }
+    }
+
+    function redo() {
+      if (redoStack.length > 0) {
+        undoStack.push(JSON.parse(JSON.stringify(data)));
+        const nextState = redoStack.pop();
+        Object.keys(data).forEach(cat => {
+          data[cat] = nextState[cat] || [];
+        });
+        renderList();
+      }
+    }
+
+    renderList();
   </script>
 </body>
 </html>
