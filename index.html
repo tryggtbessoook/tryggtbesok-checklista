@@ -10,24 +10,36 @@
       font-family: sans-serif;
       line-height: 1.4;
     }
-    h1, h2 {
-      margin-top: 1em;
-      margin-bottom: 0.5em;
+    h1 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 1em 0 0.5em;
+    }
+    h2[contenteditable] {
+      padding: 0.2em;
+      border: 1px dashed transparent;
+    }
+    h2[contenteditable]:focus {
+      outline: 2px solid #28a745;
+      border-color: #28a745;
     }
     ul {
       list-style: none;
       padding-left: 0;
-    }
-    li, h2 {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.2em 0;
+      margin: 0 0 1em;
     }
     li {
-      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      padding: 0.2em 0;
     }
-    li:focus, h2:focus {
+    li:focus {
       outline: 2px solid #28a745;
     }
     label {
@@ -60,6 +72,14 @@
       font-size: 1em;
       cursor: pointer;
     }
+    #restore-btn {
+      padding: 0.5em 1em;
+      font-size: 1em;
+      cursor: pointer;
+      background: #eee;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
     section + section {
       border-top: 1px solid #ccc;
       padding-top: 1em;
@@ -71,8 +91,9 @@
 </head>
 <body>
 
-  <h1>Inköpslista
-    <button id="restore-btn" title="Återställ alla kategorier">↺</button>
+  <h1>
+    Inköpslista
+    <button id="restore-btn">Klicka här för att återställa kategorier</button>
   </h1>
 
   <div class="add-item">
@@ -101,71 +122,71 @@
 
   <main id="main">
     <section data-cat="fruit">
-      <h2 tabindex="0">Frukt &amp; Grönt</h2>
+      <h2 tabindex="0" contenteditable="true">Frukt &amp; Grönt</h2>
       <ul id="list-fruit"></ul>
     </section>
     <section data-cat="bread">
-      <h2 tabindex="0">Bröd &amp; Bageri</h2>
+      <h2 tabindex="0" contenteditable="true">Bröd &amp; Bageri</h2>
       <ul id="list-bread"></ul>
     </section>
     <section data-cat="dairy">
-      <h2 tabindex="0">Mejeri &amp; Ägg</h2>
+      <h2 tabindex="0" contenteditable="true">Mejeri &amp; Ägg</h2>
       <ul id="list-dairy"></ul>
     </section>
     <section data-cat="meat">
-      <h2 tabindex="0">Kött, Fisk &amp; Chark</h2>
+      <h2 tabindex="0" contenteditable="true">Kött, Fisk &amp; Chark</h2>
       <ul id="list-meat"></ul>
     </section>
     <section data-cat="frozen">
-      <h2 tabindex="0">Frysvaror</h2>
+      <h2 tabindex="0" contenteditable="true">Frysvaror</h2>
       <ul id="list-frozen"></ul>
     </section>
     <section data-cat="dry">
-      <h2 tabindex="0">Torrvaror &amp; Pasta/Ris</h2>
+      <h2 tabindex="0" contenteditable="true">Torrvaror &amp; Pasta/Ris</h2>
       <ul id="list-dry"></ul>
     </section>
     <section data-cat="canned">
-      <h2 tabindex="0">Konserver &amp; Såser</h2>
+      <h2 tabindex="0" contenteditable="true">Konserver &amp; Såser</h2>
       <ul id="list-canned"></ul>
     </section>
     <section data-cat="snacks">
-      <h2 tabindex="0">Snacks &amp; Godis</h2>
+      <h2 tabindex="0" contenteditable="true">Snacks &amp; Godis</h2>
       <ul id="list-snacks"></ul>
     </section>
     <section data-cat="cereal">
-      <h2 tabindex="0">Bröd &amp; Spannmål</h2>
+      <h2 tabindex="0" contenteditable="true">Bröd &amp; Spannmål</h2>
       <ul id="list-cereal"></ul>
     </section>
     <section data-cat="drinks">
-      <h2 tabindex="0">Drycker</h2>
+      <h2 tabindex="0" contenteditable="true">Drycker</h2>
       <ul id="list-drinks"></ul>
     </section>
     <section data-cat="coffee">
-      <h2 tabindex="0">Kaffe &amp; Te</h2>
+      <h2 tabindex="0" contenteditable="true">Kaffe &amp; Te</h2>
       <ul id="list-coffee"></ul>
     </section>
     <section data-cat="breakfast">
-      <h2 tabindex="0">Frukost- & Mellanmålsprodukter</h2>
+      <h2 tabindex="0" contenteditable="true">Frukost- & Mellanmålsprodukter</h2>
       <ul id="list-breakfast"></ul>
     </section>
     <section data-cat="spices">
-      <h2 tabindex="0">Kryddor &amp; Oljor</h2>
+      <h2 tabindex="0" contenteditable="true">Kryddor &amp; Oljor</h2>
       <ul id="list-spices"></ul>
     </section>
     <section data-cat="household">
-      <h2 tabindex="0">Hem- & Städartiklar</h2>
+      <h2 tabindex="0" contenteditable="true">Hem- & Städartiklar</h2>
       <ul id="list-household"></ul>
     </section>
     <section data-cat="personal">
-      <h2 tabindex="0">Personlig Vård &amp; Hygien</h2>
+      <h2 tabindex="0" contenteditable="true">Personlig Vård &amp; Hygien</h2>
       <ul id="list-personal"></ul>
     </section>
     <section data-cat="baby">
-      <h2 tabindex="0">Barn &amp; Baby</h2>
+      <h2 tabindex="0" contenteditable="true">Barn &amp; Baby</h2>
       <ul id="list-baby"></ul>
     </section>
     <section data-cat="other">
-      <h2 tabindex="0">Övrigt</h2>
+      <h2 tabindex="0" contenteditable="true">Övrigt</h2>
       <ul id="list-other"></ul>
     </section>
   </main>
@@ -182,6 +203,13 @@
     const removedCats = new Set();
 
     function render() {
+      document.querySelectorAll('h2[contenteditable]').forEach(h2 => {
+        const cat = h2.closest('section').dataset.cat;
+        // Läs in sparat namn eller behåll textContent
+        const saved = localStorage.getItem('catname_' + cat);
+        if (saved) h2.textContent = saved;
+      });
+
       Object.keys(defaults).forEach(cat => {
         const sec = document.querySelector(`section[data-cat="${cat}"]`);
         const ul = sec.querySelector("ul");
@@ -196,8 +224,8 @@
       });
     }
 
-    function save(cat, arr) {
-      localStorage.setItem(cat, JSON.stringify(arr));
+    function saveCatName(cat, name) {
+      localStorage.setItem('catname_' + cat, name);
     }
 
     function addItem(cat, text) {
@@ -209,14 +237,13 @@
       const cb = document.createElement("input");
       cb.type = "checkbox";
       cb.checked = JSON.parse(localStorage.getItem(key)) || false;
-      cb.addEventListener("change", () => localStorage.setItem(key, JSON.stringify(cb.checked)));
+      cb.addEventListener("change", () =>
+        localStorage.setItem(key, JSON.stringify(cb.checked))
+      );
       label.append(cb, document.createTextNode(" " + text));
       li.append(label);
-      // Keyboard removal for item
       li.addEventListener("keydown", e => {
-        if (e.key === "Delete" || e.key === "Backspace") {
-          removeItem(cat, text, li);
-        }
+        if (e.key === "Delete" || e.key === "Backspace") removeItem(cat, text, li);
       });
       ul.append(li);
     }
@@ -224,12 +251,14 @@
     function removeItem(cat, text, li) {
       li.remove();
       const arr = JSON.parse(localStorage.getItem(cat)) || defaults[cat];
-      const filt = arr.filter(t => t !== text);
-      save(cat, filt);
+      save(cat, arr.filter(t => t !== text));
       localStorage.removeItem(`${cat}_${text.replace(/\s+/g,"_")}`);
     }
 
-    // Lägg till med knapp eller Enter
+    function save(cat, arr) {
+      localStorage.setItem(cat, JSON.stringify(arr));
+    }
+
     document.getElementById("add-btn").addEventListener("click", doAdd);
     document.getElementById("new-item").addEventListener("keydown", e => {
       if (e.key === "Enter") doAdd();
@@ -239,23 +268,26 @@
       const txt = document.getElementById("new-item").value.trim();
       if (!txt) return;
       const arr = JSON.parse(localStorage.getItem(cat)) || [...defaults[cat]];
-      arr.push(txt);
-      save(cat, arr);
+      save(cat, [...arr, txt]);
       document.getElementById("new-item").value = "";
       render();
     }
 
-    // Ta bort kategori via keyboard
-    document.querySelectorAll("section h2").forEach(h2 => {
+    document.querySelectorAll('h2[contenteditable]').forEach(h2 => {
+      const cat = h2.closest('section').dataset.cat;
+      h2.addEventListener("blur", () => saveCatName(cat, h2.textContent.trim()));
       h2.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          h2.blur();
+        }
         if (e.key === "Delete" || e.key === "Backspace") {
-          removedCats.add(h2.closest("section").dataset.cat);
+          removedCats.add(cat);
           render();
         }
       });
     });
 
-    // Återställ alla kategorier
     document.getElementById("restore-btn").addEventListener("click", () => {
       removedCats.clear();
       render();
