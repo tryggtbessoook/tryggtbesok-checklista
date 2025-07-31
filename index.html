@@ -5,295 +5,218 @@
   <title>Tryggtbesök Inköpslista</title>
   <style>
     body {
-      max-width: 600px;
-      margin: 1em auto;
       font-family: sans-serif;
+      max-width: 700px;
+      margin: 1em auto;
       line-height: 1.4;
     }
-    h1 {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    h2 {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 1em 0 0.5em;
-    }
-    h2[contenteditable] {
-      padding: 0.2em;
-      border: 1px dashed transparent;
-    }
-    h2[contenteditable]:focus {
-      outline: 2px solid #28a745;
-      border-color: #28a745;
-    }
-    ul {
-      list-style: none;
-      padding-left: 0;
-      margin: 0 0 1em;
-    }
-    li {
-      display: flex;
-      align-items: center;
-      padding: 0.2em 0;
-    }
-    li:focus {
-      outline: 2px solid #28a745;
-    }
-    label {
-      display: inline-flex;
-      align-items: center;
-      flex-grow: 1;
-      font-size: 1.2em;
-      cursor: pointer;
-    }
-    input[type="checkbox"] {
-      width: 1.6em;
-      height: 1.6em;
-      margin-right: 0.5em;
-      accent-color: #28a745;
-    }
-    .add-item {
-      margin: 1em 0;
-      display: flex;
-      gap: 0.5em;
-      align-items: center;
-    }
-    .add-item select,
-    .add-item input {
-      flex: 1;
-      font-size: 1em;
-      padding: 0.5em;
-    }
-    .add-item button {
-      padding: 0.5em 1em;
-      font-size: 1em;
-      cursor: pointer;
-    }
-    #restore-btn {
-      padding: 0.5em 1em;
-      font-size: 1em;
-      cursor: pointer;
-      background: #eee;
+
+    .category {
+      margin-bottom: 1.5em;
+      padding: 1em;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 8px;
     }
-    section + section {
-      border-top: 1px solid #ccc;
-      padding-top: 1em;
+
+    .category h2 {
+      margin: 0 0 0.5em;
     }
-    .hidden {
-      display: none;
+
+    .item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .item input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    .editable {
+      border: none;
+      background: none;
+      outline: none;
+      padding: 2px 4px;
+      min-width: 50px;
+    }
+
+    .editable:focus {
+      background-color: #eef;
+      border-bottom: 1px solid #aaa;
+    }
+
+    .toolbar {
+      margin-bottom: 1em;
+      display: flex;
+      gap: 1em;
+    }
+
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #007acc;
+      color: white;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    .add-controls {
+      margin-top: 0.5em;
+    }
+
+    .add-controls input {
+      padding: 4px;
+      margin-right: 0.5em;
     }
   </style>
 </head>
 <body>
 
-  <h1>
-    Inköpslista
-    <button id="restore-btn">Klicka här för att återställa kategorier</button>
-  </h1>
-
-  <div class="add-item">
-    <select id="category-select" aria-label="Välj kategori">
-      <option value="fruit">Frukt & Grönt</option>
-      <option value="bread">Bröd & Bageri</option>
-      <option value="dairy">Mejeri & Ägg</option>
-      <option value="meat">Kött, Fisk & Chark</option>
-      <option value="frozen">Frysvaror</option>
-      <option value="dry">Torrvaror & Pasta/Ris</option>
-      <option value="canned">Konserver & Såser</option>
-      <option value="snacks">Snacks & Godis</option>
-      <option value="cereal">Bröd & Spannmål</option>
-      <option value="drinks">Drycker</option>
-      <option value="coffee">Kaffe & Te</option>
-      <option value="breakfast">Frukost- & Mellanmålsprodukter</option>
-      <option value="spices">Kryddor & Oljor</option>
-      <option value="household">Hem- & Städartiklar</option>
-      <option value="personal">Personlig Vård & Hygien</option>
-      <option value="baby">Barn & Baby</option>
-      <option value="other">Övrigt</option>
-    </select>
-    <input id="new-item" type="text" placeholder="Lägg till vara…" aria-label="Ny vara">
-    <button id="add-btn">Lägg till</button>
+  <div class="toolbar">
+    <button onclick="undo()">↶ Ångra</button>
+    <button onclick="redo()">↷ Gör om</button>
+    <button onclick="addCategory()">+ Lägg till kategori</button>
   </div>
 
-  <main id="main">
-    <section data-cat="fruit">
-      <h2 tabindex="0" contenteditable="true">Frukt &amp; Grönt</h2>
-      <ul id="list-fruit"></ul>
-    </section>
-    <section data-cat="bread">
-      <h2 tabindex="0" contenteditable="true">Bröd &amp; Bageri</h2>
-      <ul id="list-bread"></ul>
-    </section>
-    <section data-cat="dairy">
-      <h2 tabindex="0" contenteditable="true">Mejeri &amp; Ägg</h2>
-      <ul id="list-dairy"></ul>
-    </section>
-    <section data-cat="meat">
-      <h2 tabindex="0" contenteditable="true">Kött, Fisk &amp; Chark</h2>
-      <ul id="list-meat"></ul>
-    </section>
-    <section data-cat="frozen">
-      <h2 tabindex="0" contenteditable="true">Frysvaror</h2>
-      <ul id="list-frozen"></ul>
-    </section>
-    <section data-cat="dry">
-      <h2 tabindex="0" contenteditable="true">Torrvaror &amp; Pasta/Ris</h2>
-      <ul id="list-dry"></ul>
-    </section>
-    <section data-cat="canned">
-      <h2 tabindex="0" contenteditable="true">Konserver &amp; Såser</h2>
-      <ul id="list-canned"></ul>
-    </section>
-    <section data-cat="snacks">
-      <h2 tabindex="0" contenteditable="true">Snacks &amp; Godis</h2>
-      <ul id="list-snacks"></ul>
-    </section>
-    <section data-cat="cereal">
-      <h2 tabindex="0" contenteditable="true">Bröd &amp; Spannmål</h2>
-      <ul id="list-cereal"></ul>
-    </section>
-    <section data-cat="drinks">
-      <h2 tabindex="0" contenteditable="true">Drycker</h2>
-      <ul id="list-drinks"></ul>
-    </section>
-    <section data-cat="coffee">
-      <h2 tabindex="0" contenteditable="true">Kaffe &amp; Te</h2>
-      <ul id="list-coffee"></ul>
-    </section>
-    <section data-cat="breakfast">
-      <h2 tabindex="0" contenteditable="true">Frukost- & Mellanmålsprodukter</h2>
-      <ul id="list-breakfast"></ul>
-    </section>
-    <section data-cat="spices">
-      <h2 tabindex="0" contenteditable="true">Kryddor &amp; Oljor</h2>
-      <ul id="list-spices"></ul>
-    </section>
-    <section data-cat="household">
-      <h2 tabindex="0" contenteditable="true">Hem- & Städartiklar</h2>
-      <ul id="list-household"></ul>
-    </section>
-    <section data-cat="personal">
-      <h2 tabindex="0" contenteditable="true">Personlig Vård &amp; Hygien</h2>
-      <ul id="list-personal"></ul>
-    </section>
-    <section data-cat="baby">
-      <h2 tabindex="0" contenteditable="true">Barn &amp; Baby</h2>
-      <ul id="list-baby"></ul>
-    </section>
-    <section data-cat="other">
-      <h2 tabindex="0" contenteditable="true">Övrigt</h2>
-      <ul id="list-other"></ul>
-    </section>
-  </main>
+  <div id="listContainer"></div>
 
   <script>
-    const defaults = {
-      fruit: ["Äpple"], bread: ["Bröd"], dairy: ["Mjölk"],
-      meat: ["Kött"], frozen: ["Grönsaker (frys)"], dry: ["Pasta"],
-      canned: ["Konserver"], snacks: ["Godis"], cereal: ["Flingor"],
-      drinks: ["Vatten"], coffee: ["Kaffe"], breakfast: ["Yoghurt"],
-      spices: ["Salt"], household: ["Toalettpapper"], personal: ["Tandkräm"],
-      baby: ["Blöjor"], other: ["Inga extra varor"]
-    };
-    const removedCats = new Set();
+    const defaultData = [
+      {
+        category: "Frukt och grönt",
+        items: ["Banan", "Äpple", "Morot"]
+      },
+      {
+        category: "Mejeri",
+        items: ["Mjölk", "Smör", "Ost"]
+      },
+      {
+        category: "Bröd",
+        items: ["Formfranska", "Knäckebröd"]
+      }
+    ];
 
-    function render() {
-      document.querySelectorAll('h2[contenteditable]').forEach(h2 => {
-        const cat = h2.closest('section').dataset.cat;
-        // Läs in sparat namn eller behåll textContent
-        const saved = localStorage.getItem('catname_' + cat);
-        if (saved) h2.textContent = saved;
+    let history = [];
+    let historyIndex = -1;
+    const container = document.getElementById('listContainer');
+
+    function saveState() {
+      history = history.slice(0, historyIndex + 1);
+      history.push(container.innerHTML);
+      historyIndex++;
+    }
+
+    function undo() {
+      if (historyIndex > 0) {
+        historyIndex--;
+        container.innerHTML = history[historyIndex];
+        attachEvents();
+      }
+    }
+
+    function redo() {
+      if (historyIndex < history.length - 1) {
+        historyIndex++;
+        container.innerHTML = history[historyIndex];
+        attachEvents();
+      }
+    }
+
+    function createEditableElement(tag, text, className) {
+      const el = document.createElement(tag);
+      el.contentEditable = true;
+      el.className = className;
+      el.textContent = text;
+      el.addEventListener("input", saveState);
+      return el;
+    }
+
+    function addItem(containerElement) {
+      const input = containerElement.querySelector(".new-item");
+      const itemText = input.value.trim();
+      if (!itemText) return;
+      const itemDiv = document.createElement("div");
+      itemDiv.className = "item";
+      itemDiv.innerHTML = `
+        <input type="checkbox">
+        <span class="editable" contenteditable="true">${itemText}</span>
+      `;
+      containerElement.insertBefore(itemDiv, containerElement.querySelector(".add-controls"));
+      input.value = "";
+      saveState();
+    }
+
+    function addCategory() {
+      const categoryDiv = document.createElement("div");
+      categoryDiv.className = "category";
+
+      const header = createEditableElement("h2", "Ny kategori", "editable");
+
+      const itemContainer = document.createElement("div");
+
+      const controls = document.createElement("div");
+      controls.className = "add-controls";
+      controls.innerHTML = `
+        <input class="new-item" type="text" placeholder="Ny vara" onkeydown="if(event.key==='Enter'){event.preventDefault(); addItem(this.closest('.category'))}">
+        <button onclick="addItem(this.closest('.category'))">+ Lägg till vara</button>
+      `;
+
+      categoryDiv.appendChild(header);
+      categoryDiv.appendChild(itemContainer);
+      categoryDiv.appendChild(controls);
+
+      container.appendChild(categoryDiv);
+      saveState();
+    }
+
+    function renderList(data) {
+      container.innerHTML = "";
+      data.forEach(section => {
+        const categoryDiv = document.createElement("div");
+        categoryDiv.className = "category";
+
+        const header = createEditableElement("h2", section.category, "editable");
+
+        const itemContainer = document.createElement("div");
+
+        section.items.forEach(item => {
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "item";
+          itemDiv.innerHTML = `
+            <input type="checkbox">
+            <span class="editable" contenteditable="true">${item}</span>
+          `;
+          itemContainer.appendChild(itemDiv);
+        });
+
+        const controls = document.createElement("div");
+        controls.className = "add-controls";
+        controls.innerHTML = `
+          <input class="new-item" type="text" placeholder="Ny vara" onkeydown="if(event.key==='Enter'){event.preventDefault(); addItem(this.closest('.category'))}">
+          <button onclick="addItem(this.closest('.category'))">+ Lägg till vara</button>
+        `;
+
+        categoryDiv.appendChild(header);
+        categoryDiv.appendChild(itemContainer);
+        categoryDiv.appendChild(controls);
+        container.appendChild(categoryDiv);
       });
+      saveState();
+    }
 
-      Object.keys(defaults).forEach(cat => {
-        const sec = document.querySelector(`section[data-cat="${cat}"]`);
-        const ul = sec.querySelector("ul");
-        ul.innerHTML = "";
-        if (removedCats.has(cat)) {
-          sec.classList.add("hidden");
-        } else {
-          sec.classList.remove("hidden");
-          const stored = JSON.parse(localStorage.getItem(cat)) || defaults[cat];
-          stored.forEach(text => addItem(cat, text));
-        }
+    function attachEvents() {
+      const editables = document.querySelectorAll('.editable');
+      editables.forEach(el => {
+        el.addEventListener("input", saveState);
       });
     }
 
-    function saveCatName(cat, name) {
-      localStorage.setItem('catname_' + cat, name);
-    }
-
-    function addItem(cat, text) {
-      const ul = document.getElementById(`list-${cat}`);
-      const key = `${cat}_${text.replace(/\s+/g,"_")}`;
-      const li = document.createElement("li");
-      li.tabIndex = 0;
-      const label = document.createElement("label");
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = JSON.parse(localStorage.getItem(key)) || false;
-      cb.addEventListener("change", () =>
-        localStorage.setItem(key, JSON.stringify(cb.checked))
-      );
-      label.append(cb, document.createTextNode(" " + text));
-      li.append(label);
-      li.addEventListener("keydown", e => {
-        if (e.key === "Delete" || e.key === "Backspace") removeItem(cat, text, li);
-      });
-      ul.append(li);
-    }
-
-    function removeItem(cat, text, li) {
-      li.remove();
-      const arr = JSON.parse(localStorage.getItem(cat)) || defaults[cat];
-      save(cat, arr.filter(t => t !== text));
-      localStorage.removeItem(`${cat}_${text.replace(/\s+/g,"_")}`);
-    }
-
-    function save(cat, arr) {
-      localStorage.setItem(cat, JSON.stringify(arr));
-    }
-
-    document.getElementById("add-btn").addEventListener("click", doAdd);
-    document.getElementById("new-item").addEventListener("keydown", e => {
-      if (e.key === "Enter") doAdd();
-    });
-    function doAdd() {
-      const cat = document.getElementById("category-select").value;
-      const txt = document.getElementById("new-item").value.trim();
-      if (!txt) return;
-      const arr = JSON.parse(localStorage.getItem(cat)) || [...defaults[cat]];
-      save(cat, [...arr, txt]);
-      document.getElementById("new-item").value = "";
-      render();
-    }
-
-    document.querySelectorAll('h2[contenteditable]').forEach(h2 => {
-      const cat = h2.closest('section').dataset.cat;
-      h2.addEventListener("blur", () => saveCatName(cat, h2.textContent.trim()));
-      h2.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          h2.blur();
-        }
-        if (e.key === "Delete" || e.key === "Backspace") {
-          removedCats.add(cat);
-          render();
-        }
-      });
-    });
-
-    document.getElementById("restore-btn").addEventListener("click", () => {
-      removedCats.clear();
-      render();
-    });
-
-    document.addEventListener("DOMContentLoaded", render);
+    renderList(defaultData);
   </script>
 </body>
 </html>
