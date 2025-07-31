@@ -10,275 +10,258 @@
       font-family: sans-serif;
       line-height: 1.4;
     }
-
     h1, h2 {
       margin-top: 1em;
       margin-bottom: 0.5em;
     }
-
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li, h2 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.2em 0;
+    }
+    li {
+      border-bottom: 1px solid #eee;
+    }
+    li:focus, h2:focus {
+      outline: 2px solid #28a745;
+    }
+    label {
+      display: inline-flex;
+      align-items: center;
+      flex-grow: 1;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+    input[type="checkbox"] {
+      width: 1.6em;
+      height: 1.6em;
+      margin-right: 0.5em;
+      accent-color: #28a745;
+    }
+    .add-item {
+      margin: 1em 0;
+      display: flex;
+      gap: 0.5em;
+      align-items: center;
+    }
+    .add-item select,
+    .add-item input {
+      flex: 1;
+      font-size: 1em;
+      padding: 0.5em;
+    }
+    .add-item button {
+      padding: 0.5em 1em;
+      font-size: 1em;
+      cursor: pointer;
+    }
     section + section {
       border-top: 1px solid #ccc;
       padding-top: 1em;
     }
-
-    label {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.75em 0;
-      font-size: 1.4em;
-      cursor: pointer;
-    }
-
-    ul {
-      list-style-type: none;
-      padding-left: 0;
-    }
-
-    input[type="checkbox"] {
-      width: 2.2em;
-      height: 2.2em;
-      margin-right: 0.75em;
-      accent-color: #28a745;
-      flex-shrink: 0;
-    }
-
-    button.remove {
-      margin-left: 1em;
-      font-size: 1em;
-      cursor: pointer;
-    }
-
-    .add-item {
-      margin: 1em 0;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.5em;
-    }
-
-    .add-item select,
-    .add-item input[type="text"] {
-      flex: 1 1 auto;
-      font-size: 1em;
-      padding: 0.5em;
-      min-width: 150px;
-    }
-
-    .add-item button {
-      flex: 0 0 auto;
-      font-size: 1em;
-      padding: 0.5em 1em;
-      cursor: pointer;
-    }
-
-    section {
-      position: relative;
-    }
-
-    section h2 {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    section .remove-category {
-      background: none;
-      border: none;
-      font-size: 1em;
-      color: #d00;
-      cursor: pointer;
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>Inköpslista</h1>
 
-  <div class="add-item" role="form" aria-label="Lägg till vara i lista">
+  <h1>Inköpslista
+    <button id="restore-btn" title="Återställ alla kategorier">↺</button>
+  </h1>
+
+  <div class="add-item">
     <select id="category-select" aria-label="Välj kategori">
-      <option value="fruit">Frukt &amp; Grönt</option>
-      <option value="bread">Bröd &amp; Bageri</option>
-      <option value="dairy">Mejeri &amp; Ägg</option>
-      <option value="meat">Kött, Fisk &amp; Chark</option>
+      <option value="fruit">Frukt & Grönt</option>
+      <option value="bread">Bröd & Bageri</option>
+      <option value="dairy">Mejeri & Ägg</option>
+      <option value="meat">Kött, Fisk & Chark</option>
       <option value="frozen">Frysvaror</option>
-      <option value="dry">Torrvaror &amp; Pasta/Ris</option>
-      <option value="canned">Konserver &amp; Såser</option>
-      <option value="snacks">Snacks &amp; Godis</option>
-      <option value="cereal">Bröd &amp; Spannmål</option>
+      <option value="dry">Torrvaror & Pasta/Ris</option>
+      <option value="canned">Konserver & Såser</option>
+      <option value="snacks">Snacks & Godis</option>
+      <option value="cereal">Bröd & Spannmål</option>
       <option value="drinks">Drycker</option>
-      <option value="coffee">Kaffe &amp; Te</option>
-      <option value="breakfast">Frukost- &amp; Mellanmålsprodukter</option>
-      <option value="spices">Kryddor &amp; Oljor</option>
-      <option value="household">Hem- &amp; Städartiklar</option>
-      <option value="personal">Personlig Vård &amp; Hygien</option>
-      <option value="baby">Barn &amp; Baby</option>
+      <option value="coffee">Kaffe & Te</option>
+      <option value="breakfast">Frukost- & Mellanmålsprodukter</option>
+      <option value="spices">Kryddor & Oljor</option>
+      <option value="household">Hem- & Städartiklar</option>
+      <option value="personal">Personlig Vård & Hygien</option>
+      <option value="baby">Barn & Baby</option>
       <option value="other">Övrigt</option>
     </select>
-    <input type="text" id="new-item-text" placeholder="Lägg till vara…" aria-label="Namn på vara">
-    <button id="add-item-btn">Lägg till</button>
+    <input id="new-item" type="text" placeholder="Lägg till vara…" aria-label="Ny vara">
+    <button id="add-btn">Lägg till</button>
   </div>
 
   <main id="main">
-    <!-- Här börjar alla kategorier -->
-    <!-- Exempel på en kategori – upprepa för varje -->
     <section data-cat="fruit">
-      <h2>
-        Frukt &amp; Grönt
-        <button class="remove-category" aria-label="Rensa Frukt &amp; Grönt">✕</button>
-      </h2>
+      <h2 tabindex="0">Frukt &amp; Grönt</h2>
       <ul id="list-fruit"></ul>
     </section>
-
     <section data-cat="bread">
-      <h2>Bröd &amp; Bageri<button class="remove-category" aria-label="Rensa Bröd &amp; Bageri">✕</button></h2>
+      <h2 tabindex="0">Bröd &amp; Bageri</h2>
       <ul id="list-bread"></ul>
     </section>
-
     <section data-cat="dairy">
-      <h2>Mejeri &amp; Ägg<button class="remove-category" aria-label="Rensa Mejeri &amp; Ägg">✕</button></h2>
+      <h2 tabindex="0">Mejeri &amp; Ägg</h2>
       <ul id="list-dairy"></ul>
     </section>
-
     <section data-cat="meat">
-      <h2>Kött, Fisk &amp; Chark<button class="remove-category" aria-label="Rensa Kött, Fisk &amp; Chark">✕</button></h2>
+      <h2 tabindex="0">Kött, Fisk &amp; Chark</h2>
       <ul id="list-meat"></ul>
     </section>
-
     <section data-cat="frozen">
-      <h2>Frysvaror<button class="remove-category" aria-label="Rensa Frysvaror">✕</button></h2>
+      <h2 tabindex="0">Frysvaror</h2>
       <ul id="list-frozen"></ul>
     </section>
-
     <section data-cat="dry">
-      <h2>Torrvaror &amp; Pasta/Ris<button class="remove-category" aria-label="Rensa Torrvaror &amp; Pasta/Ris">✕</button></h2>
+      <h2 tabindex="0">Torrvaror &amp; Pasta/Ris</h2>
       <ul id="list-dry"></ul>
     </section>
-
     <section data-cat="canned">
-      <h2>Konserver &amp; Såser<button class="remove-category" aria-label="Rensa Konserver &amp; Såser">✕</button></h2>
+      <h2 tabindex="0">Konserver &amp; Såser</h2>
       <ul id="list-canned"></ul>
     </section>
-
     <section data-cat="snacks">
-      <h2>Snacks &amp; Godis<button class="remove-category" aria-label="Rensa Snacks &amp; Godis">✕</button></h2>
+      <h2 tabindex="0">Snacks &amp; Godis</h2>
       <ul id="list-snacks"></ul>
     </section>
-
     <section data-cat="cereal">
-      <h2>Bröd &amp; Spannmål<button class="remove-category" aria-label="Rensa Bröd &amp; Spannmål">✕</button></h2>
+      <h2 tabindex="0">Bröd &amp; Spannmål</h2>
       <ul id="list-cereal"></ul>
     </section>
-
     <section data-cat="drinks">
-      <h2>Drycker<button class="remove-category" aria-label="Rensa Drycker">✕</button></h2>
+      <h2 tabindex="0">Drycker</h2>
       <ul id="list-drinks"></ul>
     </section>
-
     <section data-cat="coffee">
-      <h2>Kaffe &amp; Te<button class="remove-category" aria-label="Rensa Kaffe &amp; Te">✕</button></h2>
+      <h2 tabindex="0">Kaffe &amp; Te</h2>
       <ul id="list-coffee"></ul>
     </section>
-
     <section data-cat="breakfast">
-      <h2>Frukost- &amp; Mellanmålsprodukter<button class="remove-category" aria-label="Rensa Frukost- &amp; Mellanmålsprodukter">✕</button></h2>
+      <h2 tabindex="0">Frukost- & Mellanmålsprodukter</h2>
       <ul id="list-breakfast"></ul>
     </section>
-
     <section data-cat="spices">
-      <h2>Kryddor &amp; Oljor<button class="remove-category" aria-label="Rensa Kryddor &amp; Oljor">✕</button></h2>
+      <h2 tabindex="0">Kryddor &amp; Oljor</h2>
       <ul id="list-spices"></ul>
     </section>
-
     <section data-cat="household">
-      <h2>Hem- &amp; Städartiklar<button class="remove-category" aria-label="Rensa Hem- &amp; Städartiklar">✕</button></h2>
+      <h2 tabindex="0">Hem- & Städartiklar</h2>
       <ul id="list-household"></ul>
     </section>
-
     <section data-cat="personal">
-      <h2>Personlig Vård &amp; Hygien<button class="remove-category" aria-label="Rensa Personlig Vård &amp; Hygien">✕</button></h2>
+      <h2 tabindex="0">Personlig Vård &amp; Hygien</h2>
       <ul id="list-personal"></ul>
     </section>
-
     <section data-cat="baby">
-      <h2>Barn &amp; Baby<button class="remove-category" aria-label="Rensa Barn &amp; Baby">✕</button></h2>
+      <h2 tabindex="0">Barn &amp; Baby</h2>
       <ul id="list-baby"></ul>
     </section>
-
     <section data-cat="other">
-      <h2>Övrigt<button class="remove-category" aria-label="Rensa Övrigt">✕</button></h2>
+      <h2 tabindex="0">Övrigt</h2>
       <ul id="list-other"></ul>
     </section>
   </main>
 
   <script>
-    const categoryMap = {
-      fruit: 'list-fruit', bread: 'list-bread', dairy: 'list-dairy', meat: 'list-meat',
-      frozen: 'list-frozen', dry: 'list-dry', canned: 'list-canned', snacks: 'list-snacks',
-      cereal: 'list-cereal', drinks: 'list-drinks', coffee: 'list-coffee', breakfast: 'list-breakfast',
-      spices: 'list-spices', household: 'list-household', personal: 'list-personal',
-      baby: 'list-baby', other: 'list-other'
+    const defaults = {
+      fruit: ["Äpple"], bread: ["Bröd"], dairy: ["Mjölk"],
+      meat: ["Kött"], frozen: ["Grönsaker (frys)"], dry: ["Pasta"],
+      canned: ["Konserver"], snacks: ["Godis"], cereal: ["Flingor"],
+      drinks: ["Vatten"], coffee: ["Kaffe"], breakfast: ["Yoghurt"],
+      spices: ["Salt"], household: ["Toalettpapper"], personal: ["Tandkräm"],
+      baby: ["Blöjor"], other: ["Inga extra varor"]
     };
+    const removedCats = new Set();
 
-    function createListItem(text, key, ul) {
-      const li = document.createElement('li');
-      const label = document.createElement('label');
-      const cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.dataset.key = key;
-      cb.checked = localStorage.getItem(key) === 'true';
-      cb.addEventListener('change', () => localStorage.setItem(key, cb.checked));
-      label.appendChild(cb);
-      label.append(text);
-      li.appendChild(label);
-      const btn = document.createElement('button');
-      btn.textContent = '✕';
-      btn.className = 'remove';
-      btn.setAttribute('aria-label', 'Ta bort ' + text);
-      btn.addEventListener('click', () => {
-        ul.removeChild(li);
-        localStorage.removeItem(key);
+    function render() {
+      Object.keys(defaults).forEach(cat => {
+        const sec = document.querySelector(`section[data-cat="${cat}"]`);
+        const ul = sec.querySelector("ul");
+        ul.innerHTML = "";
+        if (removedCats.has(cat)) {
+          sec.classList.add("hidden");
+        } else {
+          sec.classList.remove("hidden");
+          const stored = JSON.parse(localStorage.getItem(cat)) || defaults[cat];
+          stored.forEach(text => addItem(cat, text));
+        }
       });
-      li.appendChild(btn);
-      ul.appendChild(li);
     }
 
-    document.getElementById('add-item-btn').addEventListener('click', () => {
-      const textInput = document.getElementById('new-item-text');
-      const text = textInput.value.trim();
-      if (!text) return;
-      const cat = document.getElementById('category-select').value;
-      const key = cat + '_' + text.toLowerCase().replace(/\s+/g, '_');
-      const ul = document.getElementById(categoryMap[cat]);
-      localStorage.setItem(key, 'false');
-      createListItem(text, key, ul);
-      textInput.value = '';
-    });
+    function save(cat, arr) {
+      localStorage.setItem(cat, JSON.stringify(arr));
+    }
 
-    // Ladda in redan sparade checkboxar
-    window.addEventListener('DOMContentLoaded', () => {
-      Object.keys(localStorage).forEach(key => {
-        const [cat, ...rest] = key.split('_');
-        if (categoryMap[cat]) {
-          const text = rest.join(' ').replace(/_/g, ' ');
-          const ul = document.getElementById(categoryMap[cat]);
-          if (![...ul.children].some(li => li.querySelector('label')?.textContent?.trim() === text)) {
-            createListItem(text, key, ul);
-          }
+    function addItem(cat, text) {
+      const ul = document.getElementById(`list-${cat}`);
+      const key = `${cat}_${text.replace(/\s+/g,"_")}`;
+      const li = document.createElement("li");
+      li.tabIndex = 0;
+      const label = document.createElement("label");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = JSON.parse(localStorage.getItem(key)) || false;
+      cb.addEventListener("change", () => localStorage.setItem(key, JSON.stringify(cb.checked)));
+      label.append(cb, document.createTextNode(" " + text));
+      li.append(label);
+      // Keyboard removal for item
+      li.addEventListener("keydown", e => {
+        if (e.key === "Delete" || e.key === "Backspace") {
+          removeItem(cat, text, li);
+        }
+      });
+      ul.append(li);
+    }
+
+    function removeItem(cat, text, li) {
+      li.remove();
+      const arr = JSON.parse(localStorage.getItem(cat)) || defaults[cat];
+      const filt = arr.filter(t => t !== text);
+      save(cat, filt);
+      localStorage.removeItem(`${cat}_${text.replace(/\s+/g,"_")}`);
+    }
+
+    // Lägg till med knapp eller Enter
+    document.getElementById("add-btn").addEventListener("click", doAdd);
+    document.getElementById("new-item").addEventListener("keydown", e => {
+      if (e.key === "Enter") doAdd();
+    });
+    function doAdd() {
+      const cat = document.getElementById("category-select").value;
+      const txt = document.getElementById("new-item").value.trim();
+      if (!txt) return;
+      const arr = JSON.parse(localStorage.getItem(cat)) || [...defaults[cat]];
+      arr.push(txt);
+      save(cat, arr);
+      document.getElementById("new-item").value = "";
+      render();
+    }
+
+    // Ta bort kategori via keyboard
+    document.querySelectorAll("section h2").forEach(h2 => {
+      h2.addEventListener("keydown", e => {
+        if (e.key === "Delete" || e.key === "Backspace") {
+          removedCats.add(h2.closest("section").dataset.cat);
+          render();
         }
       });
     });
 
-    // Rensa hela kategori
-    document.querySelectorAll('.remove-category').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const section = btn.closest('section');
-        const ul = section.querySelector('ul');
-        [...ul.children].forEach(li => {
-          const input = li.querySelector('input[type=checkbox]');
-          if (input) localStorage.removeItem(input.dataset.key);
-          li.remove();
-        });
-      });
+    // Återställ alla kategorier
+    document.getElementById("restore-btn").addEventListener("click", () => {
+      removedCats.clear();
+      render();
     });
+
+    document.addEventListener("DOMContentLoaded", render);
   </script>
 </body>
 </html>
