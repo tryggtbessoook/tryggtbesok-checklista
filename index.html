@@ -13,16 +13,24 @@
     .toolbar {
       display: flex;
       justify-content: flex-end;
+      align-items: center;
       gap: 1em;
       margin-bottom: 1em;
     }
     .toolbar button {
-      font-size: 1.2em;
-      padding: 0.4em 1em;
+      font-size: 1.6em;
+      background: none;
+      border: none;
       cursor: pointer;
     }
+    .toolbar label {
+      font-size: 0.9em;
+      display: block;
+      text-align: center;
+      margin-top: 0.2em;
+    }
     h2[contenteditable],
-    li[contenteditable] {
+    div[contenteditable] {
       outline: none;
       cursor: text;
     }
@@ -41,10 +49,19 @@
       margin-bottom: 0.5em;
     }
     input[type="checkbox"] {
-      width: 1.6em;
-      height: 1.6em;
+      width: 28px;
+      height: 28px;
       margin-right: 0.8em;
       accent-color: green;
+      flex-shrink: 0;
+    }
+    .add-category {
+      margin-top: 2em;
+      font-size: 1.1em;
+      padding: 0.6em 1.2em;
+      background-color: #eee;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -53,11 +70,19 @@
   <h1>Tryggtbesök – Inköpslista</h1>
 
   <div class="toolbar">
-    <button onclick="undo()">↶</button>
-    <button onclick="redo()">↷</button>
+    <div>
+      <button onclick="undo()">↶</button>
+      <label>Ångra</label>
+    </div>
+    <div>
+      <button onclick="redo()">↷</button>
+      <label>Gör om</label>
+    </div>
   </div>
 
   <div id="list" contenteditable="false"></div>
+
+  <button class="add-category" onclick="createSection()">➕ Lägg till kategori</button>
 
   <script>
     const defaultData = [
@@ -80,10 +105,9 @@
       "Övrigt (t.ex. husdjursmat, djurtillbehör)"
     ];
 
+    const STORAGE_KEY = "tryggtbesok_inkopslista_v2";
     let undoStack = [];
     let redoStack = [];
-
-    const STORAGE_KEY = "tryggtbesok_inkopslista_v1";
 
     function saveState() {
       undoStack.push(document.getElementById("list").innerHTML);
@@ -116,14 +140,29 @@
       document.querySelectorAll("input[type=checkbox]").forEach(cb => {
         cb.addEventListener("change", saveState);
       });
-      document.querySelectorAll("h2[contenteditable], li[contenteditable]").forEach(el => {
+
+      document.querySelectorAll("h2[contenteditable], div[contenteditable]").forEach(el => {
         el.addEventListener("input", saveState);
         el.addEventListener("keydown", e => {
-          if ((e.key === "Backspace" || e.key === "Delete") && el.textContent.trim() === "") {
+          if (e.key === "Enter" && el.tagName === "DIV") {
             e.preventDefault();
-            const parent = el.closest("section");
+            const li = document.createElement("li");
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            const div = document.createElement("div");
+            div.setAttribute("contenteditable", "true");
+            div.textContent = "Skriv en vara...";
+            li.appendChild(cb);
+            li.appendChild(div);
+            el.closest("ul").appendChild(li);
+            attachListeners();
+            div.focus();
+            saveState();
+          } else if ((e.key === "Backspace" || e.key === "Delete") && el.textContent.trim() === "") {
+            e.preventDefault();
+            const parentSection = el.closest("section");
             if (el.tagName === "H2") {
-              parent.remove();
+              parentSection.remove();
             } else {
               el.parentElement.remove();
             }
@@ -133,24 +172,28 @@
       });
     }
 
-    function createSection(title = "Ny Kategori") {
+    function createSection(title = "Ny kategori") {
       const section = document.createElement("section");
-      const heading = document.createElement("h2");
-      heading.textContent = title;
-      heading.setAttribute("contenteditable", "true");
-      section.appendChild(heading);
+      const h2 = document.createElement("h2");
+      h2.setAttribute("contenteditable", "true");
+      h2.textContent = title;
+      section.appendChild(h2);
+
       const ul = document.createElement("ul");
       const li = document.createElement("li");
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      const itemText = document.createElement("div");
-      itemText.setAttribute("contenteditable", "true");
-      itemText.textContent = "Skriv en vara...";
-      li.appendChild(checkbox);
-      li.appendChild(itemText);
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      const div = document.createElement("div");
+      div.setAttribute("contenteditable", "true");
+      div.textContent = "Skriv en vara...";
+      li.appendChild(cb);
+      li.appendChild(div);
       ul.appendChild(li);
+
       section.appendChild(ul);
       document.getElementById("list").appendChild(section);
+      attachListeners();
+      saveState();
     }
 
     function init() {
@@ -159,14 +202,11 @@
         document.getElementById("list").innerHTML = saved;
         attachListeners();
       } else {
-        defaultData.forEach(cat => createSection(cat));
-        saveState();
-        attachListeners();
+        defaultData.forEach(title => createSection(title));
       }
     }
 
     init();
   </script>
-
 </body>
 </html>
