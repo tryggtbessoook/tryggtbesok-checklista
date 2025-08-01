@@ -1,243 +1,171 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="utf-8">
-  <title>Tryggtbesök Inköpslista</title>
+  <meta charset="UTF-8">
+  <title>Tryggtbesök – Inköpslista</title>
   <style>
     body {
-      max-width: 600px;
+      max-width: 700px;
       margin: 2em auto;
       font-family: sans-serif;
       line-height: 1.5;
     }
-    h1 {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
     .toolbar {
       display: flex;
-      gap: 0.5em;
+      justify-content: flex-end;
+      gap: 1em;
+      margin-bottom: 1em;
     }
     .toolbar button {
       font-size: 1.2em;
-      padding: 0.3em 0.6em;
+      padding: 0.4em 1em;
       cursor: pointer;
     }
-    h2 {
-      margin-top: 2em;
+    h2[contenteditable],
+    li[contenteditable] {
+      outline: none;
+      cursor: text;
+    }
+    section {
+      margin-bottom: 2em;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 1em;
     }
     ul {
-      padding-left: 0;
       list-style: none;
+      padding-left: 0;
     }
     li {
-      margin-bottom: 0.4em;
       display: flex;
       align-items: center;
+      margin-bottom: 0.5em;
     }
     input[type="checkbox"] {
-      width: 24px;
-      height: 24px;
-      margin-right: 12px;
+      width: 1.6em;
+      height: 1.6em;
+      margin-right: 0.8em;
       accent-color: green;
-      transform: scale(1.4);
-    }
-    input[type="text"] {
-      flex: 1;
-      font-size: 1em;
-      padding: 6px;
-      margin-top: 4px;
-      margin-bottom: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button.add-btn {
-      margin-bottom: 1em;
-      font-size: 1em;
-      cursor: pointer;
-      padding: 0.4em 0.8em;
-    }
-    section.category {
-      position: relative;
     }
   </style>
 </head>
-<body contenteditable="false">
+<body>
 
-  <h1>
-    Tryggtbesök – Inköpslista
-    <span class="toolbar">
-      <button onclick="document.execCommand('undo')">↩️</button>
-      <button onclick="document.execCommand('redo')">↪️</button>
-    </span>
-  </h1>
+  <h1>Tryggtbesök – Inköpslista</h1>
 
-  <div id="categories">
-
-    <!-- Lista med alla kategorier -->
-    <!-- Du kan lägga till fler genom att duplicera detta block -->
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Frukt & Grönt</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Bröd & Bageri</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Mejeri & Ägg</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Kött, Fisk & Chark</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Frysvaror</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Torrvaror & Pasta/Ris</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Konserver & Såser</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Snacks & Godis</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Bröd & Spannmål (ex. flingor, müsli)</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Drycker (vatten, läsk, juice)</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Kaffe & Te</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Frukost- & Mellanmålsprodukter</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Kryddor & Oljor</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Hem- & Städartiklar</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Personlig Vård & Hygien</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Barn & Baby (blöjor, barnmat)</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
-    <section class="category" contenteditable="false">
-      <h2 contenteditable="true">Övrigt (t.ex. husdjursmat, djurtillbehör)</h2>
-      <ul>
-        <li><input type="checkbox"><input type="text" placeholder="Skriv en vara..."></li>
-      </ul>
-      <button class="add-btn" onclick="addItem(this)">➕ Lägg till vara</button>
-    </section>
-
+  <div class="toolbar">
+    <button onclick="undo()">↶</button>
+    <button onclick="redo()">↷</button>
   </div>
 
+  <div id="list" contenteditable="false"></div>
+
   <script>
-    // Lägg till ny vara i en kategori
-    function addItem(button) {
-      const list = button.previousElementSibling;
-      const li = document.createElement("li");
-      li.innerHTML = '<input type="checkbox"><input type="text" placeholder="Skriv en vara...">';
-      list.appendChild(li);
+    const defaultData = [
+      "Frukt & Grönt",
+      "Bröd & Bageri",
+      "Mejeri & Ägg",
+      "Kött, Fisk & Chark",
+      "Frysvaror",
+      "Torrvaror & Pasta/Ris",
+      "Konserver & Såser",
+      "Snacks & Godis",
+      "Bröd & Spannmål (ex. flingor, müsli)",
+      "Drycker (vatten, läsk, juice)",
+      "Kaffe & Te",
+      "Frukost- & Mellanmålsprodukter",
+      "Kryddor & Oljor",
+      "Hem- & Städartiklar",
+      "Personlig Vård & Hygien",
+      "Barn & Baby (blöjor, barnmat)",
+      "Övrigt (t.ex. husdjursmat, djurtillbehör)"
+    ];
+
+    let undoStack = [];
+    let redoStack = [];
+
+    const STORAGE_KEY = "tryggtbesok_inkopslista_v1";
+
+    function saveState() {
+      undoStack.push(document.getElementById("list").innerHTML);
+      if (undoStack.length > 50) undoStack.shift();
+      redoStack = [];
+      localStorage.setItem(STORAGE_KEY, document.getElementById("list").innerHTML);
     }
 
-    // Ta bort varor eller kategorier med Delete/Backspace
-    document.addEventListener("keydown", function(e) {
-      const active = document.activeElement;
-      if ((e.key === "Backspace" || e.key === "Delete") && active.tagName === "INPUT" && active.type === "text") {
-        const li = active.closest("li");
-        const ul = li?.parentNode;
-        if (li && ul && ul.children.length > 1) {
-          li.remove();
-        } else if (li && ul && ul.children.length === 1) {
-          const section = ul.closest("section");
-          section?.remove();
-        }
+    function undo() {
+      if (undoStack.length > 0) {
+        redoStack.push(document.getElementById("list").innerHTML);
+        const state = undoStack.pop();
+        document.getElementById("list").innerHTML = state;
+        attachListeners();
+        localStorage.setItem(STORAGE_KEY, state);
       }
-    });
+    }
+
+    function redo() {
+      if (redoStack.length > 0) {
+        undoStack.push(document.getElementById("list").innerHTML);
+        const state = redoStack.pop();
+        document.getElementById("list").innerHTML = state;
+        attachListeners();
+        localStorage.setItem(STORAGE_KEY, state);
+      }
+    }
+
+    function attachListeners() {
+      document.querySelectorAll("input[type=checkbox]").forEach(cb => {
+        cb.addEventListener("change", saveState);
+      });
+      document.querySelectorAll("h2[contenteditable], li[contenteditable]").forEach(el => {
+        el.addEventListener("input", saveState);
+        el.addEventListener("keydown", e => {
+          if ((e.key === "Backspace" || e.key === "Delete") && el.textContent.trim() === "") {
+            e.preventDefault();
+            const parent = el.closest("section");
+            if (el.tagName === "H2") {
+              parent.remove();
+            } else {
+              el.parentElement.remove();
+            }
+            saveState();
+          }
+        });
+      });
+    }
+
+    function createSection(title = "Ny Kategori") {
+      const section = document.createElement("section");
+      const heading = document.createElement("h2");
+      heading.textContent = title;
+      heading.setAttribute("contenteditable", "true");
+      section.appendChild(heading);
+      const ul = document.createElement("ul");
+      const li = document.createElement("li");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      const itemText = document.createElement("div");
+      itemText.setAttribute("contenteditable", "true");
+      itemText.textContent = "Skriv en vara...";
+      li.appendChild(checkbox);
+      li.appendChild(itemText);
+      ul.appendChild(li);
+      section.appendChild(ul);
+      document.getElementById("list").appendChild(section);
+    }
+
+    function init() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        document.getElementById("list").innerHTML = saved;
+        attachListeners();
+      } else {
+        defaultData.forEach(cat => createSection(cat));
+        saveState();
+        attachListeners();
+      }
+    }
+
+    init();
   </script>
 
 </body>
