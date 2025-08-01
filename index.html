@@ -12,22 +12,26 @@
     }
     .toolbar {
       display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 1em;
-      margin-bottom: 1em;
+      gap: 2em;
+      margin-bottom: 0.2em;
     }
     .toolbar button {
-      font-size: 1.6em;
-      background: none;
+      font-size: 2em;
       border: none;
+      background: none;
       cursor: pointer;
+      transition: transform 0.2s ease;
     }
-    .toolbar label {
+    .toolbar button:hover {
+      transform: scale(1.15);
+      outline: none;
+    }
+    .toolbar-labels {
+      display: flex;
+      gap: 5em;
       font-size: 0.9em;
-      display: block;
-      text-align: center;
-      margin-top: 0.2em;
+      margin-bottom: 1em;
+      margin-left: 0.4em;
     }
     h2[contenteditable],
     div[contenteditable] {
@@ -46,22 +50,33 @@
     li {
       display: flex;
       align-items: center;
-      margin-bottom: 0.5em;
+      margin-bottom: 0.6em;
     }
     input[type="checkbox"] {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       margin-right: 0.8em;
       accent-color: green;
       flex-shrink: 0;
     }
-    .add-category {
-      margin-top: 2em;
-      font-size: 1.1em;
-      padding: 0.6em 1.2em;
-      background-color: #eee;
-      border: none;
+    .item-text {
+      flex: 1;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .item-text:focus {
+      background: #f0f8ff;
+    }
+    #add-category {
+      font-size: 1em;
+      padding: 0.6em 1.4em;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
       cursor: pointer;
+    }
+    #add-category:hover {
+      background-color: #e0e0e0;
     }
   </style>
 </head>
@@ -70,19 +85,19 @@
   <h1>Tryggtbesök – Inköpslista</h1>
 
   <div class="toolbar">
-    <div>
-      <button onclick="undo()">↶</button>
-      <label>Ångra</label>
-    </div>
-    <div>
-      <button onclick="redo()">↷</button>
-      <label>Gör om</label>
-    </div>
+    <button onclick="undo()" title="Ångra">↶</button>
+    <button onclick="redo()" title="Gör om">↷</button>
+  </div>
+  <div class="toolbar-labels">
+    <div>Ångra</div>
+    <div>Gör om</div>
   </div>
 
   <div id="list" contenteditable="false"></div>
 
-  <button class="add-category" onclick="createSection()">➕ Lägg till kategori</button>
+  <div style="text-align:center; margin-top: 2em;">
+    <button id="add-category" onclick="createSection()">➕ Lägg till kategori</button>
+  </div>
 
   <script>
     const defaultData = [
@@ -105,9 +120,10 @@
       "Övrigt (t.ex. husdjursmat, djurtillbehör)"
     ];
 
-    const STORAGE_KEY = "tryggtbesok_inkopslista_v2";
     let undoStack = [];
     let redoStack = [];
+
+    const STORAGE_KEY = "tryggtbesok_inkopslista_v1";
 
     function saveState() {
       undoStack.push(document.getElementById("list").innerHTML);
@@ -140,29 +156,22 @@
       document.querySelectorAll("input[type=checkbox]").forEach(cb => {
         cb.addEventListener("change", saveState);
       });
-
-      document.querySelectorAll("h2[contenteditable], div[contenteditable]").forEach(el => {
+      document.querySelectorAll(".item-text, h2[contenteditable]").forEach(el => {
         el.addEventListener("input", saveState);
         el.addEventListener("keydown", e => {
-          if (e.key === "Enter" && el.tagName === "DIV") {
+          if (e.key === "Enter") {
             e.preventDefault();
             const li = document.createElement("li");
-            const cb = document.createElement("input");
-            cb.type = "checkbox";
-            const div = document.createElement("div");
-            div.setAttribute("contenteditable", "true");
-            div.textContent = "Skriv en vara...";
-            li.appendChild(cb);
-            li.appendChild(div);
-            el.closest("ul").appendChild(li);
+            li.innerHTML = '<input type="checkbox"><div class="item-text" contenteditable="true">Skriv en vara...</div>';
+            el.parentElement.parentElement.appendChild(li);
             attachListeners();
-            div.focus();
             saveState();
+            li.querySelector(".item-text").focus();
           } else if ((e.key === "Backspace" || e.key === "Delete") && el.textContent.trim() === "") {
             e.preventDefault();
-            const parentSection = el.closest("section");
+            const parent = el.closest("section");
             if (el.tagName === "H2") {
-              parentSection.remove();
+              parent.remove();
             } else {
               el.parentElement.remove();
             }
@@ -172,41 +181,42 @@
       });
     }
 
-    function createSection(title = "Ny kategori") {
+    function createSection(title = "Ny Kategori") {
       const section = document.createElement("section");
-      const h2 = document.createElement("h2");
-      h2.setAttribute("contenteditable", "true");
-      h2.textContent = title;
-      section.appendChild(h2);
+      const heading = document.createElement("h2");
+      heading.textContent = title;
+      heading.setAttribute("contenteditable", "true");
+      section.appendChild(heading);
 
       const ul = document.createElement("ul");
       const li = document.createElement("li");
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      const div = document.createElement("div");
-      div.setAttribute("contenteditable", "true");
-      div.textContent = "Skriv en vara...";
-      li.appendChild(cb);
-      li.appendChild(div);
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      const itemText = document.createElement("div");
+      itemText.setAttribute("contenteditable", "true");
+      itemText.className = "item-text";
+      itemText.textContent = "";
+      li.appendChild(checkbox);
+      li.appendChild(itemText);
       ul.appendChild(li);
-
       section.appendChild(ul);
       document.getElementById("list").appendChild(section);
-      attachListeners();
       saveState();
+      attachListeners();
     }
 
     function init() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         document.getElementById("list").innerHTML = saved;
-        attachListeners();
       } else {
-        defaultData.forEach(title => createSection(title));
+        defaultData.forEach(cat => createSection(cat));
       }
+      attachListeners();
     }
 
     init();
   </script>
+
 </body>
 </html>
