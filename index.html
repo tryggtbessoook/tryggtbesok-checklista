@@ -5,78 +5,86 @@
   <title>Tryggtbesök – Inköpslista</title>
   <style>
     body {
-      max-width: 700px;
+      max-width: 800px;
       margin: 2em auto;
       font-family: sans-serif;
-      line-height: 1.5;
+      line-height: 1.6;
     }
+
+    h1 {
+      margin-bottom: 1em;
+    }
+
     .toolbar {
       display: flex;
-      gap: 2em;
-      margin-bottom: 0.2em;
+      justify-content: flex-end;
+      gap: 1em;
+      margin-bottom: 1em;
     }
+
     .toolbar button {
-      font-size: 2em;
+      font-size: 1.5em;
       border: none;
       background: none;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      padding: 0.3em;
+      transition: background 0.3s ease;
     }
+
     .toolbar button:hover {
-      transform: scale(1.15);
-      outline: none;
+      background-color: #e0e0e0;
+      border-radius: 4px;
     }
-    .toolbar-labels {
-      display: flex;
-      gap: 5em;
-      font-size: 0.9em;
-      margin-bottom: 1em;
-      margin-left: 0.4em;
+
+    .toolbar label {
+      display: block;
+      font-size: 0.8em;
+      text-align: center;
+      margin-top: 0.2em;
     }
+
+    section {
+      margin-bottom: 2em;
+      padding-bottom: 1em;
+      border-bottom: 1px solid #ccc;
+    }
+
     h2[contenteditable],
-    div[contenteditable] {
+    .item-text {
       outline: none;
       cursor: text;
     }
-    section {
-      margin-bottom: 2em;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 1em;
-    }
+
     ul {
       list-style: none;
       padding-left: 0;
+      margin-top: 0.5em;
     }
+
     li {
       display: flex;
       align-items: center;
-      margin-bottom: 0.6em;
+      margin-bottom: 0.4em;
     }
+
     input[type="checkbox"] {
-      width: 24px;
-      height: 24px;
-      margin-right: 0.8em;
+      width: 2.4em;
+      height: 2.4em;
       accent-color: green;
+      margin-right: 0.8em;
       flex-shrink: 0;
     }
+
     .item-text {
       flex: 1;
-      padding: 2px 4px;
-      border-radius: 4px;
+      min-height: 1.2em;
     }
-    .item-text:focus {
-      background: #f0f8ff;
-    }
-    #add-category {
+
+    #addCategoryBtn {
       font-size: 1em;
-      padding: 0.6em 1.4em;
-      background-color: #f0f0f0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      padding: 0.6em 1em;
+      margin-top: 1em;
       cursor: pointer;
-    }
-    #add-category:hover {
-      background-color: #e0e0e0;
     }
   </style>
 </head>
@@ -85,45 +93,32 @@
   <h1>Tryggtbesök – Inköpslista</h1>
 
   <div class="toolbar">
-    <button onclick="undo()" title="Ångra">↶</button>
-    <button onclick="redo()" title="Gör om">↷</button>
-  </div>
-  <div class="toolbar-labels">
-    <div>Ångra</div>
-    <div>Gör om</div>
+    <div>
+      <button onclick="undo()">⟲</button>
+      <label>Ångra</label>
+    </div>
+    <div>
+      <button onclick="redo()">⟳</button>
+      <label>Gör om</label>
+    </div>
   </div>
 
   <div id="list" contenteditable="false"></div>
 
-  <div style="text-align:center; margin-top: 2em;">
-    <button id="add-category" onclick="createSection()">➕ Lägg till kategori</button>
-  </div>
+  <button id="addCategoryBtn" onclick="createSection()">➕ Lägg till kategori</button>
 
   <script>
-    const defaultData = [
-      "Frukt & Grönt",
-      "Bröd & Bageri",
-      "Mejeri & Ägg",
-      "Kött, Fisk & Chark",
-      "Frysvaror",
-      "Torrvaror & Pasta/Ris",
-      "Konserver & Såser",
-      "Snacks & Godis",
-      "Bröd & Spannmål (ex. flingor, müsli)",
-      "Drycker (vatten, läsk, juice)",
-      "Kaffe & Te",
-      "Frukost- & Mellanmålsprodukter",
-      "Kryddor & Oljor",
-      "Hem- & Städartiklar",
-      "Personlig Vård & Hygien",
-      "Barn & Baby (blöjor, barnmat)",
+    const STORAGE_KEY = "tryggtbesok_inkopslista_v2";
+    const defaultCategories = [
+      "Frukt & Grönt", "Bröd & Bageri", "Mejeri & Ägg", "Kött, Fisk & Chark",
+      "Frysvaror", "Torrvaror & Pasta/Ris", "Konserver & Såser", "Snacks & Godis",
+      "Bröd & Spannmål (ex. flingor, müsli)", "Drycker (vatten, läsk, juice)",
+      "Kaffe & Te", "Frukost- & Mellanmålsprodukter", "Kryddor & Oljor",
+      "Hem- & Städartiklar", "Personlig Vård & Hygien", "Barn & Baby (blöjor, barnmat)",
       "Övrigt (t.ex. husdjursmat, djurtillbehör)"
     ];
 
-    let undoStack = [];
-    let redoStack = [];
-
-    const STORAGE_KEY = "tryggtbesok_inkopslista_v1";
+    let undoStack = [], redoStack = [];
 
     function saveState() {
       undoStack.push(document.getElementById("list").innerHTML);
@@ -135,84 +130,104 @@
     function undo() {
       if (undoStack.length > 0) {
         redoStack.push(document.getElementById("list").innerHTML);
-        const state = undoStack.pop();
-        document.getElementById("list").innerHTML = state;
+        const prev = undoStack.pop();
+        document.getElementById("list").innerHTML = prev;
         attachListeners();
-        localStorage.setItem(STORAGE_KEY, state);
+        localStorage.setItem(STORAGE_KEY, prev);
       }
     }
 
     function redo() {
       if (redoStack.length > 0) {
         undoStack.push(document.getElementById("list").innerHTML);
-        const state = redoStack.pop();
-        document.getElementById("list").innerHTML = state;
+        const next = redoStack.pop();
+        document.getElementById("list").innerHTML = next;
         attachListeners();
-        localStorage.setItem(STORAGE_KEY, state);
+        localStorage.setItem(STORAGE_KEY, next);
       }
-    }
-
-    function attachListeners() {
-      document.querySelectorAll("input[type=checkbox]").forEach(cb => {
-        cb.addEventListener("change", saveState);
-      });
-      document.querySelectorAll(".item-text, h2[contenteditable]").forEach(el => {
-        el.addEventListener("input", saveState);
-        el.addEventListener("keydown", e => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            const li = document.createElement("li");
-            li.innerHTML = '<input type="checkbox"><div class="item-text" contenteditable="true">Skriv en vara...</div>';
-            el.parentElement.parentElement.appendChild(li);
-            attachListeners();
-            saveState();
-            li.querySelector(".item-text").focus();
-          } else if ((e.key === "Backspace" || e.key === "Delete") && el.textContent.trim() === "") {
-            e.preventDefault();
-            const parent = el.closest("section");
-            if (el.tagName === "H2") {
-              parent.remove();
-            } else {
-              el.parentElement.remove();
-            }
-            saveState();
-          }
-        });
-      });
     }
 
     function createSection(title = "Ny Kategori") {
       const section = document.createElement("section");
       const heading = document.createElement("h2");
       heading.textContent = title;
-      heading.setAttribute("contenteditable", "true");
-      section.appendChild(heading);
+      heading.contentEditable = true;
 
       const ul = document.createElement("ul");
       const li = document.createElement("li");
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
-      const itemText = document.createElement("div");
-      itemText.setAttribute("contenteditable", "true");
-      itemText.className = "item-text";
-      itemText.textContent = "";
+      const item = document.createElement("div");
+      item.className = "item-text";
+      item.contentEditable = true;
+      item.textContent = "Skriv en vara...";
+
       li.appendChild(checkbox);
-      li.appendChild(itemText);
+      li.appendChild(item);
       ul.appendChild(li);
+
+      section.appendChild(heading);
       section.appendChild(ul);
       document.getElementById("list").appendChild(section);
-      saveState();
+
       attachListeners();
+      saveState();
+    }
+
+    function attachListeners() {
+      document.querySelectorAll(".item-text").forEach(el => {
+        el.onkeydown = e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            const li = document.createElement("li");
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            const item = document.createElement("div");
+            item.className = "item-text";
+            item.contentEditable = true;
+            item.textContent = "Skriv en vara...";
+            li.appendChild(checkbox);
+            li.appendChild(item);
+            el.parentElement.parentElement.appendChild(li);
+            item.focus();
+            attachListeners();
+            saveState();
+          }
+          if ((e.key === "Backspace" || e.key === "Delete") && el.textContent.trim() === "") {
+            e.preventDefault();
+            const li = el.closest("li");
+            li.remove();
+            saveState();
+          }
+        };
+        el.oninput = saveState;
+      });
+
+      document.querySelectorAll("h2[contenteditable]").forEach(el => {
+        el.oninput = saveState;
+        el.onkeydown = e => {
+          if ((e.key === "Backspace" || e.key === "Delete") && el.textContent.trim() === "") {
+            e.preventDefault();
+            const section = el.closest("section");
+            section.remove();
+            saveState();
+          }
+        };
+      });
+
+      document.querySelectorAll("input[type=checkbox]").forEach(cb => {
+        cb.onchange = saveState;
+      });
     }
 
     function init() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         document.getElementById("list").innerHTML = saved;
+        attachListeners();
       } else {
-        defaultData.forEach(cat => createSection(cat));
+        defaultCategories.forEach(title => createSection(title));
       }
-      attachListeners();
     }
 
     init();
