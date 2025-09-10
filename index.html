@@ -25,7 +25,7 @@
         .vy-vaxlare button.active { background-color: white; color: var(--primärfärg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .undo-redo-controls { display: flex; gap: 1em; }
         .control-button { text-align: center; border-radius: var(--ram-radie); transition: background-color 0.2s ease; padding: 0.2em; cursor: pointer; }
-        .control-button:hover { background-color: var(--hover-bg); }
+        .control-button:hover { background-color: var(--hover-bg); transform: scale(1.05); } /* FIX: Subtilare fokus */
         .control-button button { font-size: 2.5em; border: none; background: none; pointer-events: none; }
         .control-button label { display: block; font-size: 0.8em; margin-top: -15px; color: #6c757d; pointer-events: none; }
         
@@ -46,6 +46,7 @@
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
+        /* FIX: Perfektionerad SVG-baserad checkbox */
         .custom-checkbox {
             width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0;
             border: 0.15em solid #BDBDBD; border-radius: 0.25em;
@@ -54,7 +55,8 @@
         }
         .custom-checkbox svg {
             width: 1.8em; height: 1.8em;
-            stroke: var(--primärfärg); stroke-width: 10;
+            stroke: var(--primärfärg); stroke-width: 12; /* Något tjockare för att undvika glapp */
+            stroke-linecap: round; stroke-linejoin: round; /* Mjukare hörn */
             stroke-dasharray: 100; stroke-dashoffset: 100;
             transition: stroke-dashoffset 0.2s ease-in-out;
         }
@@ -128,43 +130,14 @@
             'läsk': { kategoriKey: 'dryck', plats: 50, ljud: 'normal', ljus: 'normal', tips: 'Pantstationen är ofta bullrig.' }, 'chips': { kategoriKey: 'snacks_godis', plats: 60, ljud: 'normal', ljus: 'normal', tips: 'Ofta placerat nära dryckesavdelningen.' },
             'tvättmedel': { kategoriKey: 'hem_hygien', plats: 70, ljud: 'låg', ljus: 'stark', tips: 'Kan ha starka dofter.' }, 'schampo': { kategoriKey: 'hem_hygien', plats: 71, ljud: 'låg', ljus: 'stark', tips: 'Många olika dofter.' },
         };
-        const STORAGE_KEY = "tryggtbesok_inkopslista_v12";
+        const STORAGE_KEY = "tryggtbesok_inkopslista_v13";
         let aktivVy = 'planering';
         let senastePlaneringsvyHTML = '';
         let undoStack = [], redoStack = [];
 
         function sparaTillstånd(force = false) { const listContainer = document.getElementById("list-container"); const nuvarandeInnehåll = listContainer.innerHTML; if (aktivVy === 'planering') { senastePlaneringsvyHTML = nuvarandeInnehåll; } if (force || (undoStack.length === 0 || undoStack[undoStack.length - 1] !== nuvarandeInnehåll)) { undoStack.push(nuvarandeInnehåll); if (undoStack.length > 50) undoStack.shift(); redoStack = []; localStorage.setItem(STORAGE_KEY, senastePlaneringsvyHTML); } }
-        
-        // FIX: Justerad Ångra/Gör om-logik för att vara vy-medveten
-        function undo() {
-            if (undoStack.length > 1) {
-                redoStack.push(undoStack.pop());
-                const föregående = undoStack[undoStack.length - 1];
-                if(aktivVy === 'planering') {
-                    senastePlaneringsvyHTML = föregående;
-                    document.getElementById("list-container").innerHTML = föregående;
-                    bifogaLyssnare();
-                } else {
-                    senastePlaneringsvyHTML = föregående; // Återställ källan
-                    render(); // Rendera om Butiksvyn baserat på den återställda källan
-                }
-            }
-        }
-        function redo() {
-            if (redoStack.length > 0) {
-                const nästa = redoStack.pop();
-                undoStack.push(nästa);
-                if(aktivVy === 'planering') {
-                    senastePlaneringsvyHTML = nästa;
-                    document.getElementById("list-container").innerHTML = nästa;
-                    bifogaLyssnare();
-                } else {
-                    senastePlaneringsvyHTML = nästa;
-                    render();
-                }
-            }
-        }
-
+        function undo() { if (undoStack.length > 1) { redoStack.push(undoStack.pop()); const föregående = undoStack[undoStack.length - 1]; if(aktivVy === 'planering') { senastePlaneringsvyHTML = föregående; document.getElementById("list-container").innerHTML = föregående; bifogaLyssnare(); } else { senastePlaneringsvyHTML = föregående; render(); } } }
+        function redo() { if (redoStack.length > 0) { const nästa = redoStack.pop(); undoStack.push(nästa); if(aktivVy === 'planering') { senastePlaneringsvyHTML = nästa; document.getElementById("list-container").innerHTML = nästa; bifogaLyssnare(); } else { senastePlaneringsvyHTML = nästa; render(); } } }
         function bytVy(vy) { if (aktivVy === 'planering') sparaTillstånd(true); aktivVy = vy; document.getElementById('planeringsvyBtn').classList.toggle('active', vy === 'planering'); document.getElementById('butiksvyBtn').classList.toggle('active', vy === 'butik'); document.getElementById('addCategoryBtn').style.display = vy === 'planering' ? 'block' : 'none'; render(); }
 
         function render() {
@@ -208,14 +181,25 @@
             const listContainer = document.getElementById('list-container');
             listContainer.onclick = function(e) {
                 if (e.target.matches('.delete-item-btn')) { e.target.closest('li.list-item').remove(); sparaTillstånd(true); }
-                else if (e.target.matches('.delete-category-btn')) { e.target.closest('section').remove(); sparaTillstånd(true); }
-                else if (e.target.closest('.custom-checkbox')) { 
+                else if (e.target.matches('.delete-category-btn')) { // FIX: Ny 'säker' raderingslogik
+                    const section = e.target.closest('section');
+                    const ul = section.querySelector('ul');
+                    if (ul) {
+                        // Flytta alla varor utanför sektionen
+                        [...ul.children].forEach(item => listContainer.insertBefore(item, section));
+                    }
+                    section.remove();
+                    sparaTillstånd(true);
+                }
+                else if (e.target.closest('.custom-checkbox')) { // FIX: Korrekt checkbox-logik
                     const listItem = e.target.closest('li.list-item');
                     const checkboxInput = listItem.querySelector('input[type="checkbox"]');
+                    // Låt webbläsaren hantera check-bytet via labeln, synka bara classen
                     setTimeout(() => { listItem.classList.toggle('checked', checkboxInput.checked); sparaTillstånd(); }, 0);
                 }
-                else if (e.target.closest('.sensorik-wrapper')) { e.target.closest('.list-item').classList.toggle("expanded"); }
-                else if (e.target.matches('.item-header, .item-header *') && !e.target.matches('[contenteditable="true"], .custom-checkbox, .custom-checkbox *')) { e.target.closest('.list-item').classList.toggle("expanded"); }
+                else if (e.target.closest('.sensorik-wrapper')) { // FIX: Endast detta expanderar för tips
+                    e.target.closest('.list-item').classList.toggle("expanded");
+                }
             };
             listContainer.oninput = function(e) { if (e.target.matches('[contenteditable="true"]')) { sparaTillstånd(); } };
             listContainer.onkeydown = function(e) {
@@ -226,9 +210,10 @@
             };
         }
 
-        function init() {
+        function init() { // FIX: Skottsäker start-funktion
             const listContainer = document.getElementById("list-container");
             let sparadHTML = localStorage.getItem(STORAGE_KEY);
+
             if (!sparadHTML || !sparadHTML.trim()) {
                 const tempDiv = document.createElement('div');
                 const section = document.createElement("section");
@@ -239,8 +224,10 @@
                 tempDiv.appendChild(section);
                 sparadHTML = tempDiv.innerHTML;
             }
+            
             senastePlaneringsvyHTML = sparadHTML;
             listContainer.innerHTML = sparadHTML;
+            
             bifogaLyssnare();
             sparaTillstånd(true);
         }
