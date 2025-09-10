@@ -21,17 +21,13 @@
             font-size: 1em; padding: 0.6em 1.2em; border: none; background: none; cursor: pointer;
             border-radius: 7px; font-weight: 600; transition: all 0.2s ease;
         }
-        .vy-vaxlare button:not(.active):hover { background-color: #d8dee4; } /* FIX: Hover-effekt */
+        .vy-vaxlare button:not(.active):hover { background-color: #d8dee4; }
         .vy-vaxlare button.active { background-color: white; color: var(--primärfärg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .undo-redo-controls { display: flex; gap: 1.5em; }
-        .control-button { text-align: center; }
-        .control-button button { 
-            font-size: 2.5em; border: none; background: none; cursor: pointer; padding: 0.2em; 
-            border-radius: 50%; width: 50px; height: 50px; line-height: 50px;
-            transition: background-color 0.2s ease;
-        }
-        .control-button button:hover { background-color: var(--hover-bg); } /* FIX: Hover-effekt */
-        .control-button label { display: block; font-size: 0.8em; margin-top: -10px; color: #6c757d; }
+        .undo-redo-controls { display: flex; gap: 1em; }
+        .control-button { text-align: center; border-radius: var(--ram-radie); transition: background-color 0.2s ease; padding: 0.2em; }
+        .control-button:hover { background-color: var(--hover-bg); } /* FIX: Hover på hela ytan */
+        .control-button button { font-size: 2.5em; border: none; background: none; cursor: pointer; }
+        .control-button label { display: block; font-size: 0.8em; margin-top: -15px; color: #6c757d; pointer-events: none; }
         
         section { position: relative; margin-bottom: 2em; }
         h2[contenteditable="true"] { border-bottom: 2px solid var(--accentfärg); padding-bottom: 0.3em; outline: none; padding-right: 40px; }
@@ -43,45 +39,48 @@
         
         ul { list-style: none; padding-left: 0; }
         li.list-item {
-            position: relative; background-color: #FFFFFF; border-radius: var(--ram-radie); padding: 15px; margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.2s ease-in-out; border-left: 5px solid transparent;
+            position: relative; background-color: #FFFFFF; border-radius: var(--ram-radie); padding: 15px; padding-right: 50px; /* Ge plats för X */
+            margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.2s ease-in-out; border-left: 5px solid transparent;
         }
         
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
-        input[type="checkbox"] {
-            -webkit-appearance: none; appearance: none; background-color: #fff; margin-right: 1em; flex-shrink: 0;
-            font: inherit; color: currentColor; width: 2.8em; height: 2.8em;
+        /* FIX: Robust SVG-baserad checkbox */
+        .custom-checkbox {
+            width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0;
             border: 0.15em solid #BDBDBD; border-radius: 0.25em;
-            transform: translateY(-0.075em); display: grid; place-content: center; cursor: pointer;
+            display: grid; place-content: center; cursor: pointer;
+            background-color: #fff;
         }
-        input[type="checkbox"]::before {
-            content: ""; width: 1.6em; height: 1.6em;
-            transform: scale(0); transition: 120ms transform ease-in-out;
-            box-shadow: inset 1em 1em var(--primärfärg);
-            transform-origin: bottom left;
-            /* FIX: Justerade koordinater för att täcka pixelfel */
-            clip-path: polygon(14% 48%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 65%);
+        .custom-checkbox svg {
+            width: 1.8em; height: 1.8em;
+            stroke: var(--primärfärg); stroke-width: 10;
+            stroke-dasharray: 100; stroke-dashoffset: 100;
+            transition: stroke-dashoffset 0.3s ease-in-out;
         }
-        input[type="checkbox"]:checked::before { transform: scale(1); }
+        input[type="checkbox"] { display: none; }
+        input[type="checkbox"]:checked + .custom-checkbox svg {
+            stroke-dashoffset: 0;
+        }
+
         .item-text-wrapper { flex: 1; }
-        .item-text { font-size: 1.2em; outline: none; padding-right: 40px; }
+        .item-text { font-size: 1.2em; outline: none; }
 
         .vara-nummer {
             width: 25px; height: 25px; border-radius: 50%; color: white; display: inline-flex;
             align-items: center; justify-content: center; font-weight: bold; font-size: 0.9em; margin-right: 10px;
         }
-        .sensorik-wrapper { text-align: center; cursor: pointer; border-radius: var(--ram-radie); padding: 4px; transition: background-color 0.2s ease; }
-        .sensorik-wrapper:hover { background-color: var(--hover-bg); } /* FIX: Hover-effekt */
-        .sensoriska-ikoner { display: flex; gap: 8px; margin-left: 1em; justify-content: center; }
+        .sensorik-wrapper { text-align: center; cursor: pointer; border-radius: var(--ram-radie); padding: 4px; transition: background-color 0.2s ease; margin-left: 1em; }
+        .sensorik-wrapper:hover { background-color: var(--hover-bg); }
+        .sensoriska-ikoner { display: flex; gap: 8px; justify-content: center; }
         .sensoriska-ikoner span { font-size: 1.2em; }
         .sensorik-wrapper label { font-size: 0.7em; color: #6c757d; display: block; margin-top: -2px;}
         .item-detaljer { display: none; padding: 10px 0 0 70px; color: #6c757d; font-size: 0.9em; }
         li.list-item.expanded .item-detaljer { display: block; }
         
         .delete-btn {
-            position: absolute; top: 50%; transform: translateY(-50%); right: 10px;
+            position: absolute; top: 50%; transform: translateY(-50%); right: 15px;
             width: 30px; height: 30px; border-radius: 50%; border: none; background-color: #f1f1f1;
             color: #888; font-size: 1.5em; line-height: 1; cursor: pointer; transition: all 0.2s ease;
         }
@@ -103,14 +102,14 @@
             <button id="butiksvyBtn" onclick="bytVy('butik')">🛒 Butiksvy</button>
         </div>
         <div class="undo-redo-controls">
-            <div class="control-button"> <button onclick="undo()">⟲</button> <label>Ångra</label> </div>
-            <div class="control-button"> <button onclick="redo()">⟳</button> <label>Gör om</label> </div>
+            <div class="control-button" onclick="undo()"> <button>⟲</button> <label>Ångra</label> </div>
+            <div class="control-button" onclick="redo()"> <button>⟳</button> <label>Gör om</label> </div>
         </div>
     </div>
     <div id="list-container"></div>
     <button id="addCategoryBtn" onclick="skapaKategori()">➕ Lägg till kategori</button>
     <script>
-        // === UTÖKAD DATABAS FÖR EXEMPELBUTIK ===
+        // === DATABAS FÖR EXEMPELBUTIK ===
         const kategoriData = {
             'frukt_gront': { namn: 'Frukt & Grönt', nummer: 1, färg: '#588157' }, 'brod_bageri': { namn: 'Bageri', nummer: 2, färg: '#BC6C25' },
             'skafferi': { namn: 'Skafferi', nummer: 3, färg: '#606C38' }, 'kott_fisk': { namn: 'Kött, Fisk & Chark', nummer: 4, färg: '#D00000' },
@@ -130,7 +129,7 @@
             'läsk': { kategoriKey: 'dryck', plats: 50, ljud: 'normal', ljus: 'normal', tips: 'Pantstationen är ofta bullrig.' }, 'chips': { kategoriKey: 'snacks_godis', plats: 60, ljud: 'normal', ljus: 'normal', tips: 'Ofta placerat nära dryckesavdelningen.' },
             'tvättmedel': { kategoriKey: 'hem_hygien', plats: 70, ljud: 'låg', ljus: 'stark', tips: 'Kan ha starka dofter.' }, 'schampo': { kategoriKey: 'hem_hygien', plats: 71, ljud: 'låg', ljus: 'stark', tips: 'Många olika dofter.' },
         };
-        const STORAGE_KEY = "tryggtbesok_inkopslista_v10";
+        const STORAGE_KEY = "tryggtbesok_inkopslista_v11";
         let aktivVy = 'planering';
         let senastePlaneringsvyHTML = '';
         let undoStack = [], redoStack = [];
@@ -170,7 +169,23 @@
             const varaData = hittaVaraIDatabas(text); const kategoriFärg = varaData.kategori ? varaData.kategori.färg : 'transparent';
             li.style.borderLeftColor = kategoriFärg; const harSensorik = varaData.ljud === 'hög' || varaData.ljus === 'stark';
             const sensorikHTML = `<div class="sensorik-wrapper"><div class="sensoriska-ikoner">${varaData.ljud === 'hög' ? '<span>🔊</span>' : ''}${varaData.ljus === 'stark' ? '<span>✨</span>' : ''}</div>${harSensorik ? '<label>Tips</label>' : ''}</div>`;
-            li.innerHTML = `<div class="item-header"><input type="checkbox" ${isChecked ? 'checked' : ''}>${varaData.kategori && aktivVy === 'butik' ? `<div class="vara-nummer" style="background-color: ${kategoriFärg};">${varaData.kategori.nummer}</div>` : ''}<div class="item-text-wrapper"><div contenteditable="true" class="item-text">${text}</div></div>${aktivVy === 'butik' ? sensorikHTML : ''}</div>${aktivVy === 'butik' && harSensorik ? `<div class="item-detaljer"><p><strong>Tips:</strong> ${varaData.tips}</p></div>` : ''}<button class="delete-btn delete-item-btn">×</button>`;
+            const checkboxId = `checkbox-${Date.now()}-${Math.random()}`; // Unikt ID
+            
+            li.innerHTML = `
+                <div class="item-header">
+                    <input type="checkbox" id="${checkboxId}" ${isChecked ? 'checked' : ''}>
+                    <label for="${checkboxId}" class="custom-checkbox">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 60 40 80 80 30" fill="none" />
+                        </svg>
+                    </label>
+                    ${varaData.kategori && aktivVy === 'butik' ? `<div class="vara-nummer" style="background-color: ${kategoriFärg};">${varaData.kategori.nummer}</div>` : ''}
+                    <div class="item-text-wrapper"><div contenteditable="true" class="item-text">${text}</div></div>
+                    ${aktivVy === 'butik' ? sensorikHTML : ''}
+                </div>
+                ${aktivVy === 'butik' && harSensorik ? `<div class="item-detaljer"><p><strong>Tips:</strong> ${varaData.tips}</p></div>` : ''}
+                <button class="delete-btn delete-item-btn">×</button>
+            `;
             return li;
         }
         
@@ -181,9 +196,14 @@
             listContainer.onclick = function(e) {
                 if (e.target.matches('.delete-item-btn')) { e.target.closest('li.list-item').remove(); sparaTillstånd(true); }
                 else if (e.target.matches('.delete-category-btn')) { e.target.closest('section').remove(); sparaTillstånd(true); }
-                else if (e.target.matches('input[type="checkbox"]')) { e.target.closest('.list-item').classList.toggle('checked', e.target.checked); sparaTillstånd(); }
+                else if (e.target.matches('.custom-checkbox, .custom-checkbox *')) { 
+                    const checkbox = e.target.closest('.item-header').querySelector('input[type="checkbox"]');
+                    checkbox.checked = !checkbox.checked;
+                    e.target.closest('.list-item').classList.toggle('checked', checkbox.checked); 
+                    sparaTillstånd(); 
+                }
                 else if (e.target.closest('.sensorik-wrapper')) { e.target.closest('.list-item').classList.toggle("expanded"); }
-                else if (e.target.matches('.item-header, .item-header *') && !e.target.matches('[contenteditable="true"], input')) { e.target.closest('.list-item').classList.toggle("expanded"); }
+                else if (e.target.matches('.item-header, .item-header *') && !e.target.matches('[contenteditable="true"], input, .custom-checkbox, .custom-checkbox *')) { e.target.closest('.list-item').classList.toggle("expanded"); }
             };
             listContainer.oninput = function(e) { if (e.target.matches('[contenteditable="true"]')) { sparaTillstånd(); } };
             listContainer.onkeydown = function(e) {
