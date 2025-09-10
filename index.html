@@ -24,9 +24,9 @@
         .vy-vaxlare button:not(.active):hover { background-color: #d8dee4; }
         .vy-vaxlare button.active { background-color: white; color: var(--primärfärg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .undo-redo-controls { display: flex; gap: 1em; }
-        .control-button { text-align: center; border-radius: var(--ram-radie); transition: background-color 0.2s ease; padding: 0.2em; }
-        .control-button:hover { background-color: var(--hover-bg); } /* FIX: Hover på hela ytan */
-        .control-button button { font-size: 2.5em; border: none; background: none; cursor: pointer; }
+        .control-button { text-align: center; border-radius: var(--ram-radie); transition: background-color 0.2s ease; padding: 0.2em; cursor: pointer; }
+        .control-button:hover { background-color: var(--hover-bg); }
+        .control-button button { font-size: 2.5em; border: none; background: none; pointer-events: none; }
         .control-button label { display: block; font-size: 0.8em; margin-top: -15px; color: #6c757d; pointer-events: none; }
         
         section { position: relative; margin-bottom: 2em; }
@@ -39,14 +39,13 @@
         
         ul { list-style: none; padding-left: 0; }
         li.list-item {
-            position: relative; background-color: #FFFFFF; border-radius: var(--ram-radie); padding: 15px; padding-right: 50px; /* Ge plats för X */
+            position: relative; background-color: #FFFFFF; border-radius: var(--ram-radie); padding: 15px; padding-right: 50px;
             margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.2s ease-in-out; border-left: 5px solid transparent;
         }
         
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
-        /* FIX: Robust SVG-baserad checkbox */
         .custom-checkbox {
             width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0;
             border: 0.15em solid #BDBDBD; border-radius: 0.25em;
@@ -57,7 +56,7 @@
             width: 1.8em; height: 1.8em;
             stroke: var(--primärfärg); stroke-width: 10;
             stroke-dasharray: 100; stroke-dashoffset: 100;
-            transition: stroke-dashoffset 0.3s ease-in-out;
+            transition: stroke-dashoffset 0.2s ease-in-out;
         }
         input[type="checkbox"] { display: none; }
         input[type="checkbox"]:checked + .custom-checkbox svg {
@@ -129,14 +128,43 @@
             'läsk': { kategoriKey: 'dryck', plats: 50, ljud: 'normal', ljus: 'normal', tips: 'Pantstationen är ofta bullrig.' }, 'chips': { kategoriKey: 'snacks_godis', plats: 60, ljud: 'normal', ljus: 'normal', tips: 'Ofta placerat nära dryckesavdelningen.' },
             'tvättmedel': { kategoriKey: 'hem_hygien', plats: 70, ljud: 'låg', ljus: 'stark', tips: 'Kan ha starka dofter.' }, 'schampo': { kategoriKey: 'hem_hygien', plats: 71, ljud: 'låg', ljus: 'stark', tips: 'Många olika dofter.' },
         };
-        const STORAGE_KEY = "tryggtbesok_inkopslista_v11";
+        const STORAGE_KEY = "tryggtbesok_inkopslista_v12";
         let aktivVy = 'planering';
         let senastePlaneringsvyHTML = '';
         let undoStack = [], redoStack = [];
 
         function sparaTillstånd(force = false) { const listContainer = document.getElementById("list-container"); const nuvarandeInnehåll = listContainer.innerHTML; if (aktivVy === 'planering') { senastePlaneringsvyHTML = nuvarandeInnehåll; } if (force || (undoStack.length === 0 || undoStack[undoStack.length - 1] !== nuvarandeInnehåll)) { undoStack.push(nuvarandeInnehåll); if (undoStack.length > 50) undoStack.shift(); redoStack = []; localStorage.setItem(STORAGE_KEY, senastePlaneringsvyHTML); } }
-        function undo() { if (undoStack.length > 1) { redoStack.push(undoStack.pop()); const föregående = undoStack[undoStack.length - 1]; if(aktivVy === 'planering') senastePlaneringsvyHTML = föregående; document.getElementById("list-container").innerHTML = föregående; bifogaLyssnare(); } }
-        function redo() { if (redoStack.length > 0) { const nästa = redoStack.pop(); undoStack.push(nästa); if(aktivVy === 'planering') senastePlaneringsvyHTML = nästa; document.getElementById("list-container").innerHTML = nästa; bifogaLyssnare(); } }
+        
+        // FIX: Justerad Ångra/Gör om-logik för att vara vy-medveten
+        function undo() {
+            if (undoStack.length > 1) {
+                redoStack.push(undoStack.pop());
+                const föregående = undoStack[undoStack.length - 1];
+                if(aktivVy === 'planering') {
+                    senastePlaneringsvyHTML = föregående;
+                    document.getElementById("list-container").innerHTML = föregående;
+                    bifogaLyssnare();
+                } else {
+                    senastePlaneringsvyHTML = föregående; // Återställ källan
+                    render(); // Rendera om Butiksvyn baserat på den återställda källan
+                }
+            }
+        }
+        function redo() {
+            if (redoStack.length > 0) {
+                const nästa = redoStack.pop();
+                undoStack.push(nästa);
+                if(aktivVy === 'planering') {
+                    senastePlaneringsvyHTML = nästa;
+                    document.getElementById("list-container").innerHTML = nästa;
+                    bifogaLyssnare();
+                } else {
+                    senastePlaneringsvyHTML = nästa;
+                    render();
+                }
+            }
+        }
+
         function bytVy(vy) { if (aktivVy === 'planering') sparaTillstånd(true); aktivVy = vy; document.getElementById('planeringsvyBtn').classList.toggle('active', vy === 'planering'); document.getElementById('butiksvyBtn').classList.toggle('active', vy === 'butik'); document.getElementById('addCategoryBtn').style.display = vy === 'planering' ? 'block' : 'none'; render(); }
 
         function render() {
@@ -169,23 +197,8 @@
             const varaData = hittaVaraIDatabas(text); const kategoriFärg = varaData.kategori ? varaData.kategori.färg : 'transparent';
             li.style.borderLeftColor = kategoriFärg; const harSensorik = varaData.ljud === 'hög' || varaData.ljus === 'stark';
             const sensorikHTML = `<div class="sensorik-wrapper"><div class="sensoriska-ikoner">${varaData.ljud === 'hög' ? '<span>🔊</span>' : ''}${varaData.ljus === 'stark' ? '<span>✨</span>' : ''}</div>${harSensorik ? '<label>Tips</label>' : ''}</div>`;
-            const checkboxId = `checkbox-${Date.now()}-${Math.random()}`; // Unikt ID
-            
-            li.innerHTML = `
-                <div class="item-header">
-                    <input type="checkbox" id="${checkboxId}" ${isChecked ? 'checked' : ''}>
-                    <label for="${checkboxId}" class="custom-checkbox">
-                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <polyline points="20 60 40 80 80 30" fill="none" />
-                        </svg>
-                    </label>
-                    ${varaData.kategori && aktivVy === 'butik' ? `<div class="vara-nummer" style="background-color: ${kategoriFärg};">${varaData.kategori.nummer}</div>` : ''}
-                    <div class="item-text-wrapper"><div contenteditable="true" class="item-text">${text}</div></div>
-                    ${aktivVy === 'butik' ? sensorikHTML : ''}
-                </div>
-                ${aktivVy === 'butik' && harSensorik ? `<div class="item-detaljer"><p><strong>Tips:</strong> ${varaData.tips}</p></div>` : ''}
-                <button class="delete-btn delete-item-btn">×</button>
-            `;
+            const checkboxId = `checkbox-${Date.now()}-${Math.random()}`;
+            li.innerHTML = `<div class="item-header"><input type="checkbox" id="${checkboxId}" ${isChecked ? 'checked' : ''}><label for="${checkboxId}" class="custom-checkbox"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polyline points="20 60 40 80 80 30" fill="none" /></svg></label>${varaData.kategori && aktivVy === 'butik' ? `<div class="vara-nummer" style="background-color: ${kategoriFärg};">${varaData.kategori.nummer}</div>` : ''}<div class="item-text-wrapper"><div contenteditable="true" class="item-text">${text}</div></div>${aktivVy === 'butik' ? sensorikHTML : ''}</div>${aktivVy === 'butik' && harSensorik ? `<div class="item-detaljer"><p><strong>Tips:</strong> ${varaData.tips}</p></div>` : ''}<button class="delete-btn delete-item-btn">×</button>`;
             return li;
         }
         
@@ -196,14 +209,13 @@
             listContainer.onclick = function(e) {
                 if (e.target.matches('.delete-item-btn')) { e.target.closest('li.list-item').remove(); sparaTillstånd(true); }
                 else if (e.target.matches('.delete-category-btn')) { e.target.closest('section').remove(); sparaTillstånd(true); }
-                else if (e.target.matches('.custom-checkbox, .custom-checkbox *')) { 
-                    const checkbox = e.target.closest('.item-header').querySelector('input[type="checkbox"]');
-                    checkbox.checked = !checkbox.checked;
-                    e.target.closest('.list-item').classList.toggle('checked', checkbox.checked); 
-                    sparaTillstånd(); 
+                else if (e.target.closest('.custom-checkbox')) { 
+                    const listItem = e.target.closest('li.list-item');
+                    const checkboxInput = listItem.querySelector('input[type="checkbox"]');
+                    setTimeout(() => { listItem.classList.toggle('checked', checkboxInput.checked); sparaTillstånd(); }, 0);
                 }
                 else if (e.target.closest('.sensorik-wrapper')) { e.target.closest('.list-item').classList.toggle("expanded"); }
-                else if (e.target.matches('.item-header, .item-header *') && !e.target.matches('[contenteditable="true"], input, .custom-checkbox, .custom-checkbox *')) { e.target.closest('.list-item').classList.toggle("expanded"); }
+                else if (e.target.matches('.item-header, .item-header *') && !e.target.matches('[contenteditable="true"], .custom-checkbox, .custom-checkbox *')) { e.target.closest('.list-item').classList.toggle("expanded"); }
             };
             listContainer.oninput = function(e) { if (e.target.matches('[contenteditable="true"]')) { sparaTillstånd(); } };
             listContainer.onkeydown = function(e) {
@@ -215,15 +227,22 @@
         }
 
         function init() {
-            const sparadLista = localStorage.getItem(STORAGE_KEY);
-            senastePlaneringsvyHTML = sparadLista || ''; const listContainer = document.getElementById("list-container");
-            if (!senastePlaneringsvyHTML.trim()) {
-                const section = document.createElement("section"); const deleteBtn = `<button class="delete-btn delete-category-btn">×</button>`;
+            const listContainer = document.getElementById("list-container");
+            let sparadHTML = localStorage.getItem(STORAGE_KEY);
+            if (!sparadHTML || !sparadHTML.trim()) {
+                const tempDiv = document.createElement('div');
+                const section = document.createElement("section");
+                const deleteBtn = `<button class="delete-btn delete-category-btn">×</button>`;
                 section.innerHTML = `<h2 contenteditable="true">Ny Kategori</h2>${deleteBtn}<ul></ul>`;
-                const ul = section.querySelector('ul'); ul.appendChild(skapaVaraElement());
-                listContainer.appendChild(section); senastePlaneringsvyHTML = listContainer.innerHTML;
+                const ul = section.querySelector('ul');
+                ul.appendChild(skapaVaraElement());
+                tempDiv.appendChild(section);
+                sparadHTML = tempDiv.innerHTML;
             }
-            bytVy('planering'); sparaTillstånd(true);
+            senastePlaneringsvyHTML = sparadHTML;
+            listContainer.innerHTML = sparadHTML;
+            bifogaLyssnare();
+            sparaTillstånd(true);
         }
 
         init();
