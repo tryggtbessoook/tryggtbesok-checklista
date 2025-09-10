@@ -6,22 +6,14 @@
     <title>TryggtBesök – Inköpslista</title>
     <style>
         :root {
-            --bakgrund: #F8F9FA;
-            --textfärg: #212529;
-            --primärfärg: #01285C;
-            --accentfärg: #4A6A94;
-            --ram-radie: 10px;
-            --varning-ljud: #FFDDC1;
-            --varning-ljus: #FFFACD;
+            --bakgrund: #F8F9FA; --textfärg: #212529; --primärfärg: #01285C;
+            --accentfärg: #4A6A94; --ram-radie: 10px; --varning-ljud: #FFDDC1; --varning-ljus: #FFFACD;
         }
-
         body {
             max-width: 800px; margin: 2em auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6; background-color: var(--bakgrund); color: var(--textfärg);
         }
-
         h1 { color: var(--primärfärg); text-align: center; margin-bottom: 1em; font-weight: 700; }
-
         .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em; }
         .vy-vaxlare { display: flex; background-color: #E9ECEF; border-radius: var(--ram-radie); padding: 5px; }
         .vy-vaxlare button {
@@ -29,52 +21,59 @@
             border-radius: 7px; font-weight: 600; transition: all 0.2s ease;
         }
         .vy-vaxlare button.active { background-color: white; color: var(--primärfärg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
         .undo-redo-controls { display: flex; gap: 1.5em; }
         .control-button { text-align: center; }
         .control-button button { font-size: 2.5em; border: none; background: none; cursor: pointer; padding: 0.2em; }
         .control-button label { display: block; font-size: 0.8em; margin-top: -10px; color: #6c757d; }
-        
         section { margin-bottom: 2em; }
         h2[contenteditable="true"] { border-bottom: 2px solid var(--accentfärg); padding-bottom: 0.3em; outline: none; }
-        
         .kategori-rubrik {
             padding: 8px 15px; border-radius: var(--ram-radie); color: white; margin-top: 2.5em;
             margin-bottom: 1em; font-size: 1.2em; font-weight: 600;
         }
-        
         ul { list-style: none; padding-left: 0; }
-
         li.list-item {
             background-color: #FFFFFF; border-radius: var(--ram-radie); padding: 15px; margin-bottom: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.2s ease-in-out; border-left: 5px solid transparent;
         }
-        
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
         input[type="checkbox"] {
-            width: 3.5em; /* FIX: Storleken har ökats igen */
-            height: 3.5em; /* FIX: Storleken har ökats igen */
-            accent-color: var(--primärfärg); margin-right: 1em; flex-shrink: 0;
+            -webkit-appearance: none; appearance: none;
+            background-color: #fff; margin-right: 1em; flex-shrink: 0;
+            font: inherit; color: currentColor;
+            width: 3em; height: 3em; /* Storleken satt här */
+            border: 0.15em solid #BDBDBD;
+            border-radius: 0.25em;
+            transform: translateY(-0.075em);
+            display: grid; place-content: center;
+            cursor: pointer;
         }
-
+        input[type="checkbox"]::before {
+            content: "";
+            width: 1.8em; height: 1.8em; /* Storleken på själva bocken */
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em var(--primärfärg);
+            transform-origin: bottom left;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+        input[type="checkbox"]:checked::before {
+            transform: scale(1);
+        }
         .item-text-wrapper { flex: 1; }
         .item-text { font-size: 1.1em; outline: none; }
-
         .vara-nummer {
             width: 25px; height: 25px; border-radius: 50%; color: white; display: inline-flex;
             align-items: center; justify-content: center; font-weight: bold; font-size: 0.9em; margin-right: 10px;
         }
-
         .sensorik-wrapper { text-align: center; cursor: pointer; }
         .sensoriska-ikoner { display: flex; gap: 8px; margin-left: 1em; }
         .sensoriska-ikoner span { font-size: 1.2em; }
         .sensorik-wrapper label { font-size: 0.7em; color: #6c757d; display: block; margin-top: -2px;}
-
-        .item-detaljer { display: none; padding: 10px 0 0 70px; /* Justerat indrag */ color: #6c757d; font-size: 0.9em; }
+        .item-detaljer { display: none; padding: 10px 0 0 70px; color: #6c757d; font-size: 0.9em; }
         li.list-item.expanded .item-detaljer { display: block; }
-
         #addCategoryBtn {
              font-size: 1em; padding: 0.8em 1.2em; margin-top: 1em; cursor: pointer;
              border: 2px solid var(--accentfärg); background-color: transparent;
@@ -83,9 +82,7 @@
     </style>
 </head>
 <body>
-
     <h1>TryggtBesök – Inköpslista</h1>
-
     <div class="toolbar">
         <div class="vy-vaxlare">
             <button id="planeringsvyBtn" class="active" onclick="bytVy('planering')">📝 Planeringsvy</button>
@@ -96,65 +93,45 @@
             <div class="control-button"> <button onclick="redo()">⟳</button> <label>Gör om</label> </div>
         </div>
     </div>
-
     <div id="list-container"></div>
-
     <button id="addCategoryBtn" onclick="skapaKategori()">➕ Lägg till kategori</button>
-
     <script>
         // === UTÖKAD DATABAS FÖR EXEMPELBUTIK ===
         const kategoriData = {
-            'frukt_gront': { namn: 'Frukt & Grönt', nummer: 1, färg: '#588157' },
-            'brod_bageri': { namn: 'Bageri', nummer: 2, färg: '#BC6C25' },
-            'skafferi': { namn: 'Skafferi', nummer: 3, färg: '#606C38' },
-            'kott_fisk': { namn: 'Kött, Fisk & Chark', nummer: 4, färg: '#D00000' },
-            'mejeri_kylt': { namn: 'Mejeri & Kylt', nummer: 5, färg: '#0077B6' },
-            'frys': { namn: 'Frysdisken', nummer: 6, färg: '#48CAE4' },
-            'dryck': { namn: 'Drycker', nummer: 7, färg: '#F77F00' },
-            'snacks_godis': { namn: 'Snacks & Godis', nummer: 8, färg: '#7209B7' },
-            'hem_hygien': { namn: 'Hem & Hygien', nummer: 9, färg: '#3A0CA3' },
-            'ovrigt': { namn: 'Övrigt', nummer: 99, färg: '#6c757d' } // För egna varor
+            'frukt_gront': { namn: 'Frukt & Grönt', nummer: 1, färg: '#588157' }, 'brod_bageri': { namn: 'Bageri', nummer: 2, färg: '#BC6C25' },
+            'skafferi': { namn: 'Skafferi', nummer: 3, färg: '#606C38' }, 'kott_fisk': { namn: 'Kött, Fisk & Chark', nummer: 4, färg: '#D00000' },
+            'mejeri_kylt': { namn: 'Mejeri & Kylt', nummer: 5, färg: '#0077B6' }, 'frys': { namn: 'Frysdisken', nummer: 6, färg: '#48CAE4' },
+            'dryck': { namn: 'Drycker', nummer: 7, färg: '#F77F00' }, 'snacks_godis': { namn: 'Snacks & Godis', nummer: 8, färg: '#7209B7' },
+            'hem_hygien': { namn: 'Hem & Hygien', nummer: 9, färg: '#3A0CA3' }, 'ovrigt': { namn: 'Övrigt', nummer: 99, färg: '#6c757d' }
         };
-
         const butiksKatalog = {
             'mjölk': { kategoriKey: 'mejeri_kylt', plats: 30, ljud: 'låg', ljus: 'stark', tips: 'Kylarna kan brumma en del.' },
-            'ägg': { kategoriKey: 'mejeri_kylt', plats: 31, ljud: 'låg', ljus: 'stark', tips: 'Bredvid mjölken.' },
-            'yoghurt': { kategoriKey: 'mejeri_kylt', plats: 32, ljud: 'låg', ljus: 'stark', tips: 'Olika smaker kan stå utspritt.' },
-            'ost': { kategoriKey: 'mejeri_kylt', plats: 33, ljud: 'låg', ljus: 'stark', tips: 'Stark doft vid delikatessdisken.' },
-            'banan': { kategoriKey: 'frukt_gront', plats: 2, ljud: 'låg', ljus: 'normal', tips: 'Ofta precis vid ingången.' },
-            'äpple': { kategoriKey: 'frukt_gront', plats: 3, ljud: 'låg', ljus: 'normal', tips: 'Tänk på att välja fasta äpplen.' },
-            'tomat': { kategoriKey: 'frukt_gront', plats: 4, ljud: 'låg', ljus: 'normal', tips: 'Finns både i lösvikt och förpackat.' },
-            'bröd': { kategoriKey: 'brod_bageri', plats: 5, ljud: 'låg', ljus: 'normal', tips: 'Nygräddat bröd kan dofta starkt.' },
-            'pasta': { kategoriKey: 'skafferi', plats: 15, ljud: 'låg', ljus: 'normal', tips: 'Finns på gång 4.' },
-            'ris': { kategoriKey: 'skafferi', plats: 16, ljud: 'låg', ljus: 'normal', tips: 'Stora säckar längst ner på hyllan.' },
-            'köttfärs': { kategoriKey: 'kott_fisk', plats: 25, ljud: 'låg', ljus: 'stark', tips: 'Kyldisken för kött.' },
-            'kyckling': { kategoriKey: 'kott_fisk', plats: 26, ljud: 'låg', ljus: 'stark', tips: 'Finns både färsk och fryst.' },
-            'korv': { kategoriKey: 'kott_fisk', plats: 27, ljud: 'låg', ljus: 'stark', tips: 'Många olika sorter.' },
-            'frysta ärtor': { kategoriKey: 'frys', plats: 40, ljud: 'hög', ljus: 'stark', tips: 'Frysdiskarna kan låta mycket.' },
-            'glass': { kategoriKey: 'frys', plats: 41, ljud: 'hög', ljus: 'stark', tips: 'Ofta i slutet av fryssektionen.' },
-            'läsk': { kategoriKey: 'dryck', plats: 50, ljud: 'normal', ljus: 'normal', tips: 'Pantstationen är ofta bullrig.' },
-            'chips': { kategoriKey: 'snacks_godis', plats: 60, ljud: 'normal', ljus: 'normal', tips: 'Ofta placerat nära dryckesavdelningen.' },
-            'tvättmedel': { kategoriKey: 'hem_hygien', plats: 70, ljud: 'låg', ljus: 'stark', tips: 'Kan ha starka dofter.' },
-            'schampo': { kategoriKey: 'hem_hygien', plats: 71, ljud: 'låg', ljus: 'stark', tips: 'Många olika dofter.' },
+            'ägg': { kategoriKey: 'mejeri_kylt', plats: 31, ljud: 'låg', ljus: 'stark', tips: 'Bredvid mjölken.' }, 'yoghurt': { kategoriKey: 'mejeri_kylt', plats: 32, ljud: 'låg', ljus: 'stark', tips: 'Olika smaker kan stå utspritt.' },
+            'ost': { kategoriKey: 'mejeri_kylt', plats: 33, ljud: 'låg', ljus: 'stark', tips: 'Stark doft vid delikatessdisken.' }, 'banan': { kategoriKey: 'frukt_gront', plats: 2, ljud: 'låg', ljus: 'normal', tips: 'Ofta precis vid ingången.' },
+            'äpple': { kategoriKey: 'frukt_gront', plats: 3, ljud: 'låg', ljus: 'normal', tips: 'Tänk på att välja fasta äpplen.' }, 'tomat': { kategoriKey: 'frukt_gront', plats: 4, ljud: 'låg', ljus: 'normal', tips: 'Finns både i lösvikt och förpackat.' },
+            'bröd': { kategoriKey: 'brod_bageri', plats: 5, ljud: 'låg', ljus: 'normal', tips: 'Nygräddat bröd kan dofta starkt.' }, 'pasta': { kategoriKey: 'skafferi', plats: 15, ljud: 'låg', ljus: 'normal', tips: 'Finns på gång 4.' },
+            'ris': { kategoriKey: 'skafferi', plats: 16, ljud: 'låg', ljus: 'normal', tips: 'Stora säckar längst ner på hyllan.' }, 'köttfärs': { kategoriKey: 'kott_fisk', plats: 25, ljud: 'låg', ljus: 'stark', tips: 'Kyldisken för kött.' },
+            'kyckling': { kategoriKey: 'kott_fisk', plats: 26, ljud: 'låg', ljus: 'stark', tips: 'Finns både färsk och fryst.' }, 'korv': { kategoriKey: 'kott_fisk', plats: 27, ljud: 'låg', ljus: 'stark', tips: 'Många olika sorter.' },
+            'frysta ärtor': { kategoriKey: 'frys', plats: 40, ljud: 'hög', ljus: 'stark', tips: 'Frysdiskarna kan låta mycket.' }, 'glass': { kategoriKey: 'frys', plats: 41, ljud: 'hög', ljus: 'stark', tips: 'Ofta i slutet av fryssektionen.' },
+            'läsk': { kategoriKey: 'dryck', plats: 50, ljud: 'normal', ljus: 'normal', tips: 'Pantstationen är ofta bullrig.' }, 'chips': { kategoriKey: 'snacks_godis', plats: 60, ljud: 'normal', ljus: 'normal', tips: 'Ofta placerat nära dryckesavdelningen.' },
+            'tvättmedel': { kategoriKey: 'hem_hygien', plats: 70, ljud: 'låg', ljus: 'stark', tips: 'Kan ha starka dofter.' }, 'schampo': { kategoriKey: 'hem_hygien', plats: 71, ljud: 'låg', ljus: 'stark', tips: 'Många olika dofter.' },
         };
-        // === SLUT PÅ DATABAS ===
-
-        const STORAGE_KEY = "tryggtbesok_inkopslista_v7";
+        const STORAGE_KEY = "tryggtbesok_inkopslista_v8";
         let aktivVy = 'planering';
-        let senastePlaneringsvyHTML = ''; // FIX: Separat minne för planeringsvyn
+        let senastePlaneringsvyHTML = '';
         let undoStack = [], redoStack = [];
 
         function sparaTillstånd(force = false) {
             const listContainer = document.getElementById("list-container");
             const nuvarandeInnehåll = listContainer.innerHTML;
             if (aktivVy === 'planering') {
-                senastePlaneringsvyHTML = nuvarandeInnehåll; // Spara alltid en ren version av planeringsvyn
+                senastePlaneringsvyHTML = nuvarandeInnehåll;
             }
             if (force || (undoStack.length === 0 || undoStack[undoStack.length - 1] !== nuvarandeInnehåll)) {
                 undoStack.push(nuvarandeInnehåll);
                 if (undoStack.length > 50) undoStack.shift();
                 redoStack = [];
-                localStorage.setItem(STORAGE_KEY, nuvarandeInnehåll);
+                localStorage.setItem(STORAGE_KEY, senastePlaneringsvyHTML);
             }
         }
 
@@ -179,7 +156,7 @@
         }
 
         function bytVy(vy) {
-            if (aktivVy === 'planering') sparaTillstånd(true); // Spara alltid planeringsvyn innan byte
+            if (aktivVy === 'planering') sparaTillstånd(true);
             aktivVy = vy;
             document.getElementById('planeringsvyBtn').classList.toggle('active', vy === 'planering');
             document.getElementById('butiksvyBtn').classList.toggle('active', vy === 'butik');
@@ -189,34 +166,29 @@
 
         function render() {
             const listContainer = document.getElementById('list-container');
-            
             if (aktivVy === 'planering') {
-                listContainer.innerHTML = senastePlaneringsvyHTML; // FIX: Ladda alltid den rena planeringsvyn
+                listContainer.innerHTML = senastePlaneringsvyHTML;
             } else { // Butiksvy
                 const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = senastePlaneringsvyHTML; // Bygg alltid från den rena planeringsvyn
-                
+                tempDiv.innerHTML = senastePlaneringsvyHTML;
                 let allaVaror = [];
                 tempDiv.querySelectorAll('.list-item').forEach(itemElem => {
                     const text = itemElem.querySelector('.item-text').textContent;
                     const isChecked = itemElem.querySelector('input[type="checkbox"]').checked;
-                    if(text && text.trim() !== "" && text.trim() !== "Skriv en vara...") {
+                    if(text && text.trim() && text.trim() !== "Skriv en vara...") {
                         const varaData = hittaVaraIDatabas(text);
                         allaVaror.push({ ...varaData, text: text, checked: isChecked });
                     }
                 });
-                
                 allaVaror.sort((a, b) => {
                     const katANum = a.kategori ? a.kategori.nummer : 999;
                     const katBNum = b.kategori ? b.kategori.nummer : 999;
                     if (katANum !== katBNum) return katANum - katBNum;
                     return a.plats - b.plats;
                 });
-                
                 listContainer.innerHTML = '';
                 const ul = document.createElement('ul');
                 let nuvarandeKategoriNummer = -1;
-
                 allaVaror.forEach(vara => {
                     if (vara.kategori && vara.kategori.nummer !== nuvarandeKategoriNummer) {
                         nuvarandeKategoriNummer = vara.kategori.nummer;
@@ -236,12 +208,10 @@
         function skapaKategori(titel = "Ny Kategori") {
             const section = document.createElement("section");
             section.innerHTML = `<h2 contenteditable="true">${titel}</h2><ul></ul>`;
-            
             const ul = section.querySelector('ul');
             const förstaVaran = skapaVaraElement();
             ul.appendChild(förstaVaran);
             document.getElementById("list-container").appendChild(section);
-
             bifogaLyssnare();
             sparaTillstånd(true);
             förstaVaran.querySelector('.item-text').focus();
@@ -251,29 +221,30 @@
             const li = document.createElement("li");
             li.className = "list-item";
             if(isChecked) li.classList.add('checked');
-
             const varaData = hittaVaraIDatabas(text);
             const kategoriFärg = varaData.kategori ? varaData.kategori.färg : 'transparent';
             li.style.borderLeftColor = kategoriFärg;
+
+            const harSensorik = varaData.ljud === 'hög' || varaData.ljus === 'stark';
+            const sensorikHTML = `
+                <div class="sensorik-wrapper">
+                    <div class="sensoriska-ikoner">
+                        ${varaData.ljud === 'hög' ? '<span>🔊</span>' : ''}
+                        ${varaData.ljus === 'stark' ? '<span>✨</span>' : ''}
+                    </div>
+                    ${harSensorik ? '<label>Tips</label>' : ''}
+                </div>`;
             
             li.innerHTML = `
                 <div class="item-header">
                     <input type="checkbox" ${isChecked ? 'checked' : ''}>
-                    ${varaData.kategori ? `<div class="vara-nummer" style="background-color: ${kategoriFärg};">${varaData.kategori.nummer}</div>` : ''}
+                    ${varaData.kategori && aktivVy === 'butik' ? `<div class="vara-nummer" style="background-color: ${kategoriFärg};">${varaData.kategori.nummer}</div>` : ''}
                     <div class="item-text-wrapper">
                         <div contenteditable="true" class="item-text">${text}</div>
                     </div>
-                    <div class="sensorik-wrapper">
-                        <div class="sensoriska-ikoner">
-                            ${varaData.ljud === 'hög' ? '<span>🔊</span>' : ''}
-                            ${varaData.ljus === 'stark' ? '<span>✨</span>' : ''}
-                        </div>
-                        ${(varaData.ljud === 'hög' || varaData.ljus === 'stark') ? '<label>Tips</label>' : ''}
-                    </div>
+                    ${aktivVy === 'butik' ? sensorikHTML : ''}
                 </div>
-                <div class="item-detaljer">
-                    <p><strong>Tips:</strong> ${varaData.tips}</p>
-                </div>
+                ${aktivVy === 'butik' && harSensorik ? `<div class="item-detaljer"><p><strong>Tips:</strong> ${varaData.tips}</p></div>` : ''}
             `;
             return li;
         }
@@ -286,26 +257,23 @@
                     return { ...vara, kategori: kategoriData[vara.kategoriKey] };
                 }
             }
-            // FIX: Hanterar egna varor och kopplar dem till "Övrigt"-kategorin
             return { kategoriKey: 'ovrigt', plats: 999, ljud: 'okänd', ljus: 'okänd', tips: 'Egen vara, ingen specifik info finns.', kategori: kategoriData['ovrigt'] };
         }
 
         function bifogaLyssnare() {
             const listContainer = document.getElementById('list-container');
-            
             listContainer.onclick = function(e) {
                 if (e.target.matches('input[type="checkbox"]')) {
                     e.target.closest('.list-item').classList.toggle('checked', e.target.checked);
                     sparaTillstånd();
                 }
-                else if (e.target.closest('.sensorik-wrapper')) { // FIX: Klick på tips-området
+                else if (e.target.closest('.sensorik-wrapper')) {
                     e.target.closest('.list-item').classList.toggle("expanded");
                 }
                 else if (e.target.matches('.item-header, .item-header *') && !e.target.matches('[contenteditable="true"], input')) {
                     e.target.closest('.list-item').classList.toggle("expanded");
                 }
             };
-            
             listContainer.oninput = function(e) { if (e.target.matches('[contenteditable="true"]')) { sparaTillstånd(); } };
             listContainer.onkeydown = function(e) {
                 if (e.target.matches('.item-text') && e.key === "Enter") {
@@ -321,10 +289,19 @@
 
         function init() {
             const sparadLista = localStorage.getItem(STORAGE_KEY);
-            senastePlaneringsvyHTML = sparadLista || ''; // Ladda in det sparade eller en tom sträng
-            if (!sparadLista) {
-                skapaKategori("Min Första Lista");
+            senastePlaneringsvyHTML = sparadLista || '';
+            const listContainer = document.getElementById("list-container");
+
+            if (!senastePlaneringsvyHTML.trim()) {
+                // Skapa standardvyn bara om det är helt tomt
+                const section = document.createElement("section");
+                section.innerHTML = `<h2 contenteditable="true">Min Inköpslista</h2><ul></ul>`;
+                const ul = section.querySelector('ul');
+                ul.appendChild(skapaVaraElement());
+                listContainer.appendChild(section);
+                senastePlaneringsvyHTML = listContainer.innerHTML;
             }
+            
             bytVy('planering');
             sparaTillstånd(true);
         }
