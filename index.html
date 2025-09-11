@@ -106,7 +106,22 @@
             <div class="control-button" onclick="undo()"> <button>⟲</button> <label>Ångra</label> </div>
             <div class="control-button" onclick="redo()"> <button>⟳</button> <label>Gör om</label> </div>
         </div>
-    </div>
+        <div class="ai-importer">
+    <h3>Magisk Lista ✨</h3>
+    <p>Klistra in en hel lista, ett recept eller en rörig anteckning, så sorterar vi ut varorna åt dig.</p>
+    <textarea id="ai-input" placeholder="Ex: 2L mjölk, bröd, korv från charken och ägg..."></textarea>
+    <button id="ai-process-btn" onclick="hanteraMagiskLista()">Skapa lista</button>
+</div>
+<style>
+    .ai-importer { background-color: #fff; padding: 20px; border-radius: var(--ram-radie); margin-bottom: 2em; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+    .ai-importer h3 { margin-top: 0; }
+    .ai-importer textarea { width: 100%; min-height: 80px; font-family: inherit; font-size: 1em; padding: 10px; border-radius: 7px; border: 1px solid #ccc; box-sizing: border-box; }
+    .ai-importer button {
+        width: 100%; background-color: var(--primärfärg); color: white; font-weight: 600;
+        border: none; padding: 12px; font-size: 1.1em; border-radius: 7px; margin-top: 10px; cursor: pointer;
+    }
+    .ai-importer button:disabled { background-color: var(--accentfärg); cursor: not-allowed; }
+</style>    </div>
     <div id="list-container"></div>
     <button id="addCategoryBtn" onclick="skapaKategori()">➕ Lägg till kategori</button>
     <script>
@@ -233,6 +248,59 @@
         }
 
         init();
-    </script>
+        // NYTT: Funktion för att hantera AI-anrop
+        async function hanteraMagiskLista() {
+            const textArea = document.getElementById('ai-input');
+            const processBtn = document.getElementById('ai-process-btn');
+            const userInput = textArea.value;
+
+            if (!userInput.trim()) return; // Gör inget om fältet är tomt
+
+            // Inaktivera knapp och visa att vi tänker
+            processBtn.disabled = true;
+            processBtn.textContent = 'Tänker...';
+
+            try {
+                // Anropa vårt eget "postkontor" (inte Google direkt)
+                const response = await fetch('/api/process-list', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: userInput })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Något gick fel med servern.');
+                }
+
+                const varor = await response.json(); // Ta emot den rena listan ["Mjölk", "Korv", ...]
+                
+                // Hitta den första kategorins <ul>-lista att lägga till varorna i
+                let targetUl = document.querySelector('section ul');
+                if (!targetUl) {
+                    // Om det inte finns någon kategori, skapa en först
+                    skapaKategori("Importerad Lista");
+                    targetUl = document.querySelector('section ul');
+                    // Ta bort den tomma "Skriv en vara..." som skapas automatiskt
+                    targetUl.innerHTML = ''; 
+                }
+                
+                // Lägg till varje vara i listan
+                varor.forEach(varaText => {
+                    const nyVara = skapaVaraElement(varaText, false);
+                    targetUl.appendChild(nyVara);
+                });
+
+                sparaTillstånd(true); // Spara den nya listan
+
+            } catch (error) {
+                console.error('Fel:', error);
+                alert('Kunde inte skapa listan. Försök igen.');
+            } finally {
+                // Återställ knapp och rensa fältet
+                processBtn.disabled = false;
+                processBtn.textContent = 'Skapa lista';
+                textArea.value = '';
+            }
+        }    </script>
 </body>
 </html>
