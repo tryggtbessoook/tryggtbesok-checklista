@@ -15,7 +15,7 @@
             line-height: 1.6; background-color: var(--bakgrund); color: var(--textfärg);
         }
         h1 { color: var(--primärfärg); text-align: center; margin-bottom: 1em; font-weight: 700; }
-        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em; }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em; flex-wrap: wrap; gap: 1em;}
         .vy-vaxlare { display: flex; background-color: #E9ECEF; border-radius: var(--ram-radie); padding: 5px; }
         .vy-vaxlare button {
             font-size: 1em; padding: 0.6em 1.2em; border: none; background: none; cursor: pointer;
@@ -25,28 +25,31 @@
         .vy-vaxlare button.active { background-color: white; color: var(--primärfärg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .undo-redo-controls { display: flex; gap: 1em; }
         .control-button { text-align: center; border-radius: var(--ram-radie); transition: background-color 0.2s ease; padding: 0.2em; cursor: pointer; }
-        .control-button:hover { background-color: var(--hover-bg); transform: scale(1.05); } /* FIX: Subtilare fokus */
+        .control-button:hover { background-color: var(--hover-bg); transform: scale(1.05); }
         .control-button button { font-size: 2.5em; border: none; background: none; pointer-events: none; }
         .control-button label { display: block; font-size: 0.8em; margin-top: -15px; color: #6c757d; pointer-events: none; }
         
+        .ai-importer { width: 100%; box-sizing: border-box; background-color: #fff; padding: 20px; border-radius: var(--ram-radie); margin-bottom: 2em; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        .ai-importer h3 { margin-top: 0; }
+        .ai-importer p { margin-top: 0; font-size: 0.9em; color: #6c757d;}
+        .ai-importer textarea { width: 100%; min-height: 80px; font-family: inherit; font-size: 1em; padding: 10px; border-radius: 7px; border: 1px solid #ccc; box-sizing: border-box; }
+        .ai-importer button {
+            width: 100%; background-color: var(--primärfärg); color: white; font-weight: 600;
+            border: none; padding: 12px; font-size: 1.1em; border-radius: 7px; margin-top: 10px; cursor: pointer;
+        }
+        .ai-importer button:disabled { background-color: var(--accentfärg); cursor: not-allowed; }
+
         section { position: relative; margin-bottom: 2em; }
         h2[contenteditable="true"] { border-bottom: 2px solid var(--accentfärg); padding-bottom: 0.3em; outline: none; padding-right: 40px; }
-        
-        .kategori-rubrik {
-            padding: 8px 15px; border-radius: var(--ram-radie); color: white; margin-top: 2.5em;
-            margin-bottom: 1em; font-size: 1.2em; font-weight: 600;
-        }
-        
+        .kategori-rubrik { padding: 8px 15px; border-radius: var(--ram-radie); color: white; margin-top: 2.5em; margin-bottom: 1em; font-size: 1.2em; font-weight: 600; }
         ul { list-style: none; padding-left: 0; }
         li.list-item {
             position: relative; background-color: #FFFFFF; border-radius: var(--ram-radie); padding: 15px; padding-right: 50px;
             margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.2s ease-in-out; border-left: 5px solid transparent;
         }
-        
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
-        /* FIX: Perfektionerad SVG-baserad checkbox */
         .custom-checkbox {
             width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0;
             border: 0.15em solid #BDBDBD; border-radius: 0.25em;
@@ -55,19 +58,15 @@
         }
         .custom-checkbox svg {
             width: 1.8em; height: 1.8em;
-            stroke: var(--primärfärg); stroke-width: 12; /* Något tjockare för att undvika glapp */
-            stroke-linecap: round; stroke-linejoin: round; /* Mjukare hörn */
+            stroke: var(--primärfärg); stroke-width: 12;
+            stroke-linecap: round; stroke-linejoin: round;
             stroke-dasharray: 100; stroke-dashoffset: 100;
             transition: stroke-dashoffset 0.2s ease-in-out;
         }
         input[type="checkbox"] { display: none; }
-        input[type="checkbox"]:checked + .custom-checkbox svg {
-            stroke-dashoffset: 0;
-        }
-
+        input[type="checkbox"]:checked + .custom-checkbox svg { stroke-dashoffset: 0; }
         .item-text-wrapper { flex: 1; }
         .item-text { font-size: 1.2em; outline: none; }
-
         .vara-nummer {
             width: 25px; height: 25px; border-radius: 50%; color: white; display: inline-flex;
             align-items: center; justify-content: center; font-weight: bold; font-size: 0.9em; margin-right: 10px;
@@ -79,7 +78,6 @@
         .sensorik-wrapper label { font-size: 0.7em; color: #6c757d; display: block; margin-top: -2px;}
         .item-detaljer { display: none; padding: 10px 0 0 70px; color: #6c757d; font-size: 0.9em; }
         li.list-item.expanded .item-detaljer { display: block; }
-        
         .delete-btn {
             position: absolute; top: 50%; transform: translateY(-50%); right: 15px;
             width: 30px; height: 30px; border-radius: 50%; border: none; background-color: #f1f1f1;
@@ -87,7 +85,6 @@
         }
         .delete-btn:hover { background-color: var(--danger-color); color: white; }
         h2 + .delete-btn { top: 22px; right: 5px; }
-
         #addCategoryBtn {
              font-size: 1em; padding: 0.8em 1.2em; margin-top: 1em; cursor: pointer;
              border: 2px solid var(--accentfärg); background-color: transparent;
@@ -106,22 +103,15 @@
             <div class="control-button" onclick="undo()"> <button>⟲</button> <label>Ångra</label> </div>
             <div class="control-button" onclick="redo()"> <button>⟳</button> <label>Gör om</label> </div>
         </div>
-        <div class="ai-importer">
-    <h3>Magisk Lista ✨</h3>
-    <p>Klistra in en hel lista, ett recept eller en rörig anteckning, så sorterar vi ut varorna åt dig.</p>
-    <textarea id="ai-input" placeholder="Ex: 2L mjölk, bröd, korv från charken och ägg..."></textarea>
-    <button id="ai-process-btn" onclick="hanteraMagiskLista()">Skapa lista</button>
-</div>
-<style>
-    .ai-importer { background-color: #fff; padding: 20px; border-radius: var(--ram-radie); margin-bottom: 2em; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-    .ai-importer h3 { margin-top: 0; }
-    .ai-importer textarea { width: 100%; min-height: 80px; font-family: inherit; font-size: 1em; padding: 10px; border-radius: 7px; border: 1px solid #ccc; box-sizing: border-box; }
-    .ai-importer button {
-        width: 100%; background-color: var(--primärfärg); color: white; font-weight: 600;
-        border: none; padding: 12px; font-size: 1.1em; border-radius: 7px; margin-top: 10px; cursor: pointer;
-    }
-    .ai-importer button:disabled { background-color: var(--accentfärg); cursor: not-allowed; }
-</style>    </div>
+    </div>
+
+    <div class="ai-importer">
+        <h3>Magisk Lista ✨</h3>
+        <p>Klistra in en hel lista, ett recept eller en rörig anteckning, så sorterar vi ut varorna åt dig.</p>
+        <textarea id="ai-input" placeholder="Ex: 2L mjölk, bröd, korv från charken och ägg..."></textarea>
+        <button id="ai-process-btn" onclick="hanteraMagiskLista()">Skapa lista</button>
+    </div>
+
     <div id="list-container"></div>
     <button id="addCategoryBtn" onclick="skapaKategori()">➕ Lägg till kategori</button>
     <script>
@@ -196,25 +186,9 @@
             const listContainer = document.getElementById('list-container');
             listContainer.onclick = function(e) {
                 if (e.target.matches('.delete-item-btn')) { e.target.closest('li.list-item').remove(); sparaTillstånd(true); }
-                else if (e.target.matches('.delete-category-btn')) { // FIX: Ny 'säker' raderingslogik
-                    const section = e.target.closest('section');
-                    const ul = section.querySelector('ul');
-                    if (ul) {
-                        // Flytta alla varor utanför sektionen
-                        [...ul.children].forEach(item => listContainer.insertBefore(item, section));
-                    }
-                    section.remove();
-                    sparaTillstånd(true);
-                }
-                else if (e.target.closest('.custom-checkbox')) { // FIX: Korrekt checkbox-logik
-                    const listItem = e.target.closest('li.list-item');
-                    const checkboxInput = listItem.querySelector('input[type="checkbox"]');
-                    // Låt webbläsaren hantera check-bytet via labeln, synka bara classen
-                    setTimeout(() => { listItem.classList.toggle('checked', checkboxInput.checked); sparaTillstånd(); }, 0);
-                }
-                else if (e.target.closest('.sensorik-wrapper')) { // FIX: Endast detta expanderar för tips
-                    e.target.closest('.list-item').classList.toggle("expanded");
-                }
+                else if (e.target.matches('.delete-category-btn')) { const section = e.target.closest('section'); const ul = section.querySelector('ul'); if (ul) { [...ul.children].forEach(item => listContainer.insertBefore(item, section)); } section.remove(); sparaTillstånd(true); }
+                else if (e.target.closest('.custom-checkbox')) { const listItem = e.target.closest('li.list-item'); const checkboxInput = listItem.querySelector('input[type="checkbox"]'); setTimeout(() => { listItem.classList.toggle('checked', checkboxInput.checked); sparaTillstånd(); }, 0); }
+                else if (e.target.closest('.sensorik-wrapper')) { e.target.closest('.list-item').classList.toggle("expanded"); }
             };
             listContainer.oninput = function(e) { if (e.target.matches('[contenteditable="true"]')) { sparaTillstånd(); } };
             listContainer.onkeydown = function(e) {
@@ -225,10 +199,9 @@
             };
         }
 
-        function init() { // FIX: Skottsäker start-funktion
+        function init() {
             const listContainer = document.getElementById("list-container");
             let sparadHTML = localStorage.getItem(STORAGE_KEY);
-
             if (!sparadHTML || !sparadHTML.trim()) {
                 const tempDiv = document.createElement('div');
                 const section = document.createElement("section");
@@ -239,68 +212,53 @@
                 tempDiv.appendChild(section);
                 sparadHTML = tempDiv.innerHTML;
             }
-            
             senastePlaneringsvyHTML = sparadHTML;
             listContainer.innerHTML = sparadHTML;
-            
             bifogaLyssnare();
             sparaTillstånd(true);
         }
 
         init();
-        // NYTT: Funktion för att hantera AI-anrop
+
         async function hanteraMagiskLista() {
             const textArea = document.getElementById('ai-input');
             const processBtn = document.getElementById('ai-process-btn');
             const userInput = textArea.value;
-
-            if (!userInput.trim()) return; // Gör inget om fältet är tomt
-
-            // Inaktivera knapp och visa att vi tänker
+            if (!userInput.trim()) return;
             processBtn.disabled = true;
             processBtn.textContent = 'Tänker...';
-
             try {
-                // Anropa vårt eget "postkontor" (inte Google direkt)
-                const response = await fetch('/api/process-list', {
+                const apiUrl = 'https://tryggtbesok-checklista.vercel.app/api/process-list';
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text: userInput })
                 });
-
                 if (!response.ok) {
-                    throw new Error('Något gick fel med servern.');
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Något gick fel med servern.');
                 }
-
-                const varor = await response.json(); // Ta emot den rena listan ["Mjölk", "Korv", ...]
-                
-                // Hitta den första kategorins <ul>-lista att lägga till varorna i
+                const varor = await response.json();
                 let targetUl = document.querySelector('section ul');
                 if (!targetUl) {
-                    // Om det inte finns någon kategori, skapa en först
                     skapaKategori("Importerad Lista");
                     targetUl = document.querySelector('section ul');
-                    // Ta bort den tomma "Skriv en vara..." som skapas automatiskt
                     targetUl.innerHTML = ''; 
                 }
-                
-                // Lägg till varje vara i listan
                 varor.forEach(varaText => {
                     const nyVara = skapaVaraElement(varaText, false);
                     targetUl.appendChild(nyVara);
                 });
-
-                sparaTillstånd(true); // Spara den nya listan
-
+                sparaTillstånd(true);
             } catch (error) {
                 console.error('Fel:', error);
-                alert('Kunde inte skapa listan. Försök igen.');
+                alert('Kunde inte skapa listan. Felmeddelande: ' + error.message);
             } finally {
-                // Återställ knapp och rensa fältet
                 processBtn.disabled = false;
                 processBtn.textContent = 'Skapa lista';
                 textArea.value = '';
             }
-        }    </script>
+        }
+    </script>
 </body>
 </html>
