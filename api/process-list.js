@@ -1,14 +1,12 @@
-// Fil: /api/process-list.js (Justerad för maximal kompatibilitet)
+
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Använder module.exports istället för export default för robusthet
 module.exports = async (req, res) => {
-  // Sätter headers för att tillåta anrop från din Vercel-app
   res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Eller specifik Vercel-domän för högre säkerhet
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
