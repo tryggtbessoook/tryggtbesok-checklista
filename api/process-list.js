@@ -1,23 +1,22 @@
-// Fil: /api/process-list.js (Skottsäker version)
+// Fil: api/process-list.js (Den slutgiltiga, mest robusta versionen)
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Denna funktion kommer att köras varje gång din app gör ett anrop
 module.exports = async (req, res) => {
-  // Sätt headers för att tillåta anrop. Detta är viktigt för säkerheten.
+  // Sätt headers för att tillåta anrop från alla webbplatser.
   res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Tillåter alla ursprung, kan specificeras för högre säkerhet
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-control-allow-headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Vercel kräver att vi hanterar en s.k. OPTIONS-förfrågan
+  // Hantera OPTIONS-förfrågan som webbläsare skickar automatiskt
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
   
-  // === FÖRSTA, KRITISKA KONTROLLEN: Finns API-nyckeln? ===
+  // Första, kritiska kontrollen: Finns API-nyckeln överhuvudtaget?
   if (!process.env.GEMINI_API_KEY) {
-    console.error("FATALT FEL: Miljövariabeln GEMINI_API_KEY är inte satt!");
+    console.error("FATALT FEL: Miljövariabeln GEMINI_API_KEY är inte satt på Vercel!");
     return res.status(500).json({ error: "Servern är felkonfigurerad. API-nyckel saknas." });
   }
 
@@ -46,8 +45,8 @@ module.exports = async (req, res) => {
     return res.status(200).json(JSON.parse(text));
 
   } catch (error) {
-    // Om något annat går fel (t.ex. ogiltig nyckel), logga det på servern
+    // Om något annat går fel (t.ex. ogiltig nyckel från Google), logga det.
     console.error("Ett fel inträffade i API-funktionen:", error);
-    return res.status(500).json({ error: "Kunde inte bearbeta din lista just nu." });
+    return res.status(500).json({ error: "Kunde inte bearbeta din lista just nu. API-nyckeln kan vara ogiltig eller så har projektet inte rätt behörigheter i Google Cloud." });
   }
 };
