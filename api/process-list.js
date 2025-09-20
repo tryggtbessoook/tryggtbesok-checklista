@@ -1,11 +1,8 @@
-// Fil: /api/process-list.js (OpenAI-version)
+// Fil: /api/process-list.js (Slutgiltig OpenAI-version)
 const OpenAI = require('openai');
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 module.exports = async (req, res) => {
+  // Hantera CORS och preflight-förfrågan FÖRST
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -14,11 +11,22 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
+  // Kontrollera att det är en POST-förfrågan
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Endast POST är tillåten' });
+  }
+
+  // FÖRST NU, KONTROLLERA API-NYCKELN
   if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: "Servern är felkonfigurerad. OpenAI API-nyckel saknas." });
+    console.error("FATALT FEL: Miljövariabeln OPENAI_API_KEY är inte satt!");
+    return res.status(500).json({ error: "Servern är felkonfigurerad. API-nyckel saknas." });
   }
 
   try {
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
     const userInput = req.body.text;
     if (!userInput) {
       return res.status(400).json({ error: 'Ingen text att bearbeta' });
@@ -32,8 +40,7 @@ module.exports = async (req, res) => {
       response_format: { type: "json_object" },
     });
     
-    const resultText = completion.choices[0].message.content;
-    const resultJson = JSON.parse(resultText);
+    const resultJson = JSON.parse(completion.choices[0].message.content);
     const varor = resultJson.items || [];
 
     return res.status(200).json(varor);
