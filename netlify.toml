@@ -1,0 +1,5 @@
+[build]
+  command = "echo 'No build command required'"
+  publish = "."
+[functions]
+  directory = "api"
