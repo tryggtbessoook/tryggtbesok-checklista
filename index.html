@@ -25,7 +25,7 @@
         .vy-vaxlare button:not(.active):hover { background-color: #d8dee4; }
         .vy-vaxlare button.active { background-color: white; color: var(--primärfärg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .undo-redo-controls { display: flex; gap: 1em; }
-        .control-button { text-align: center; border-radius: var(--ram-radie); transition: background-color 0.2s ease; padding: 0.2em; cursor: pointer; }
+        .control-button { text-align: center; border-radius: var(--ram-radie); transition: all 0.2s ease; padding: 0.2em; cursor: pointer; }
         .control-button:hover { background-color: var(--hover-bg); transform: scale(1.05); }
         .control-button button { font-size: 2.5em; border: none; background: none; pointer-events: none; }
         .control-button label { display: block; font-size: 0.8em; margin-top: -15px; color: #6c757d; pointer-events: none; }
@@ -90,29 +90,60 @@
         const kategoriData = { 'frukt_gront': { namn: 'Frukt & Grönt', nummer: 1, färg: '#588157' }, 'brod_bageri': { namn: 'Bageri', nummer: 2, färg: '#BC6C25' }, 'skafferi': { namn: 'Skafferi', nummer: 3, färg: '#606C38' }, 'kott_fisk': { namn: 'Kött, Fisk & Chark', nummer: 4, färg: '#D00000' }, 'mejeri_kylt': { namn: 'Mejeri & Kylt', nummer: 5, färg: '#0077B6' }, 'frys': { namn: 'Frysdisken', nummer: 6, färg: '#48CAE4' }, 'dryck': { namn: 'Drycker', nummer: 7, färg: '#F77F00' }, 'snacks_godis': { namn: 'Snacks & Godis', nummer: 8, färg: '#7209B7' }, 'hem_hygien': { namn: 'Hem & Hygien', nummer: 9, färg: '#3A0CA3' }, 'ovrigt': { namn: 'Övrigt', nummer: 99, färg: '#6c757d' } };
         const butiksKatalog = { 'mjölk': { kategoriKey: 'mejeri_kylt', plats: 30, ljud: 'låg', ljus: 'stark', tips: 'Kylarna kan brumma en del.' }, 'ägg': { kategoriKey: 'mejeri_kylt', plats: 31, ljud: 'låg', ljus: 'stark', tips: 'Bredvid mjölken.' }, 'yoghurt': { kategoriKey: 'mejeri_kylt', plats: 32, ljud: 'låg', ljus: 'stark', tips: 'Olika smaker kan stå utspritt.' }, 'ost': { kategoriKey: 'mejeri_kylt', plats: 33, ljud: 'låg', ljus: 'stark', tips: 'Stark doft vid delikatessdisken.' }, 'banan': { kategoriKey: 'frukt_gront', plats: 2, ljud: 'låg', ljus: 'normal', tips: 'Ofta precis vid ingången.' }, 'äpple': { kategoriKey: 'frukt_gront', plats: 3, ljud: 'låg', ljus: 'normal', tips: 'Tänk på att välja fasta äpplen.' }, 'tomat': { kategoriKey: 'frukt_gront', plats: 4, ljud: 'låg', ljus: 'normal', tips: 'Finns både i lösvikt och förpackat.' }, 'bröd': { kategoriKey: 'brod_bageri', plats: 5, ljud: 'låg', ljus: 'normal', tips: 'Nygräddat bröd kan dofta starkt.' }, 'pasta': { kategoriKey: 'skafferi', plats: 15, ljud: 'låg', ljus: 'normal', tips: 'Finns på gång 4.' }, 'ris': { kategoriKey: 'skafferi', plats: 16, ljud: 'låg', ljus: 'normal', tips: 'Stora säckar längst ner på hyllan.' }, 'köttfärs': { kategoriKey: 'kott_fisk', plats: 25, ljud: 'låg', ljus: 'stark', tips: 'Kyldisken för kött.' }, 'kyckling': { kategoriKey: 'kott_fisk', plats: 26, ljud: 'låg', ljus: 'stark', tips: 'Finns både färsk och fryst.' }, 'korv': { kategoriKey: 'kott_fisk', plats: 27, ljud: 'låg', ljus: 'stark', tips: 'Många olika sorter.' }, 'frysta ärtor': { kategoriKey: 'frys', plats: 40, ljud: 'hög', ljus: 'stark', tips: 'Frysdiskarna kan låta mycket.' }, 'glass': { kategoriKey: 'frys', plats: 41, ljud: 'hög', ljus: 'stark', tips: 'Ofta i slutet av fryssektionen.' }, 'läsk': { kategoriKey: 'dryck', plats: 50, ljud: 'normal', ljus: 'normal', tips: 'Pantstationen är ofta bullrig.' }, 'chips': { kategoriKey: 'snacks_godis', plats: 60, ljud: 'normal', ljus: 'normal', tips: 'Ofta placerat nära dryckesavdelningen.' }, 'tvättmedel': { kategoriKey: 'hem_hygien', plats: 70, ljud: 'låg', ljus: 'stark', tips: 'Kan ha starka dofter.' }, 'schampo': { kategoriKey: 'hem_hygien', plats: 71, ljud: 'låg', ljus: 'stark', tips: 'Många olika dofter.' }, };
         
-        const MULTILIST_STORAGE_KEY = "tryggtbesok_multilist_v2";
+        const MULTILIST_STORAGE_KEY = "tryggtbesok_multilist_v3_robust";
         let aktivVy = 'planering';
-        let undoStack = [], redoStack = [];
         let appState = { activeListId: null, lists: {} };
 
-        function sparaTillstånd(force = false) {
+        function sparaTillstånd() {
             const listContainer = document.getElementById("list-container");
-            // Spara bara om vi är i planeringsvyn, för att undvika att Butiksvyns HTML sparas
-            if (aktivVy === 'planering' && appState.activeListId && appState.lists[appState.activeListId]) {
+            const aktivLista = appState.lists[appState.activeListId];
+            if (!aktivLista) return;
+
+            // Spara bara om vi är i planeringsvyn
+            if (aktivVy === 'planering') {
                 const nuvarandeInnehåll = listContainer.innerHTML;
-                appState.lists[appState.activeListId].htmlContent = nuvarandeInnehåll;
-                localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState));
-                if (force) {
-                    undoStack.push(nuvarandeInnehåll);
-                    if (undoStack.length > 50) undoStack.shift();
-                    redoStack = [];
+                
+                // Jämför med senaste historik-steget för att undvika dubbletter
+                const senasteHistorik = aktivLista.history[aktivLista.historyIndex];
+                if (nuvarandeInnehåll !== senasteHistorik) {
+                    aktivLista.historyIndex++;
+                    aktivLista.history.splice(aktivLista.historyIndex); // Ta bort framtida "redo"-steg
+                    aktivLista.history.push(nuvarandeInnehåll);
                 }
+                
+                aktivLista.htmlContent = nuvarandeInnehåll;
+            }
+            
+            localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState));
+        }
+        
+        function undo() {
+            if (aktivVy !== 'planering') return;
+            const aktivLista = appState.lists[appState.activeListId];
+            if (aktivLista && aktivLista.historyIndex > 0) {
+                aktivLista.historyIndex--;
+                const föregående = aktivLista.history[aktivLista.historyIndex];
+                document.getElementById("list-container").innerHTML = föregående;
+                aktivLista.htmlContent = föregående; // Synka huvud-innehållet
+                localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState));
+                bifogaLyssnare();
+                syncCheckboxStates();
             }
         }
 
-        // Förenklad Ångra/Gör om som fungerar i Planeringsvyn
-        function undo() { if(aktivVy !== 'planering' || undoStack.length <= 1) return; redoStack.push(undoStack.pop()); const föregående = undoStack[undoStack.length - 1]; document.getElementById("list-container").innerHTML = föregående; sparaTillstånd(); bifogaLyssnare(); }
-        function redo() { if(aktivVy !== 'planering' || redoStack.length === 0) return; const nästa = redoStack.pop(); undoStack.push(nästa); document.getElementById("list-container").innerHTML = nästa; sparaTillstånd(); bifogaLyssnare(); }
+        function redo() {
+            if (aktivVy !== 'planering') return;
+            const aktivLista = appState.lists[appState.activeListId];
+            if (aktivLista && aktivLista.historyIndex < aktivLista.history.length - 1) {
+                aktivLista.historyIndex++;
+                const nästa = aktivLista.history[aktivLista.historyIndex];
+                document.getElementById("list-container").innerHTML = nästa;
+                aktivLista.htmlContent = nästa; // Synka huvud-innehållet
+                localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState));
+                bifogaLyssnare();
+                syncCheckboxStates();
+            }
+        }
 
         function bytVy(vy) {
             if (aktivVy === 'planering') { sparaTillstånd(); }
@@ -120,19 +151,20 @@
             document.getElementById('planeringsvyBtn').classList.toggle('active', vy === 'planering');
             document.getElementById('butiksvyBtn').classList.toggle('active', vy === 'butik');
             render();
-            uppdateraRedigeringsläge();
         }
 
         function render() {
             const listContainer = document.getElementById('list-container');
             const aktivLista = appState.lists[appState.activeListId];
-            if (!aktivLista) { listContainer.innerHTML = ''; return; }
+            if (!aktivLista) { listContainer.innerHTML = ''; uppdateraRedigeringsläge(); return; }
 
+            const aktivListaHTML = aktivLista.htmlContent || '';
+            
             if (aktivVy === 'planering') {
-                listContainer.innerHTML = aktivLista.htmlContent;
+                listContainer.innerHTML = aktivListaHTML;
             } else { // Butiksvy
                 const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = aktivLista.htmlContent;
+                tempDiv.innerHTML = aktivListaHTML;
                 let allaVaror = [];
                 tempDiv.querySelectorAll('.list-item').forEach(itemElem => {
                     const text = itemElem.querySelector('.item-text').textContent;
@@ -161,6 +193,7 @@
             }
             bifogaLyssnare();
             syncCheckboxStates();
+            uppdateraRedigeringsläge();
         }
         
         function skapaKategori(titel = "Ny Kategori") {
@@ -180,7 +213,6 @@
         function skapaVaraElement(text = "Skriv en vara...", isChecked = false) {
             const li = document.createElement("li");
             li.className = "list-item";
-            if(isChecked) li.classList.add('checked');
             const varaData = hittaVaraIDatabas(text);
             const kategoriFärg = varaData.kategori ? varaData.kategori.färg : 'transparent';
             li.style.borderLeftColor = kategoriFärg;
@@ -198,10 +230,18 @@
             listContainer.onclick = function(e) {
                 if (e.target.matches('.delete-item-btn')) { if (aktivVy === 'planering') { e.target.closest('li.list-item').remove(); sparaTillstånd(true); } }
                 else if (e.target.matches('.delete-category-btn')) { if (aktivVy === 'planering') { const section = e.target.closest('section'); const ul = section.querySelector('ul'); if (ul) { [...ul.children].forEach(item => listContainer.insertBefore(item, section)); } section.remove(); sparaTillstånd(true); } }
-                else if (e.target.closest('.custom-checkbox')) { const listItem = e.target.closest('li.list-item'); const checkboxInput = listItem.querySelector('input[type="checkbox"]'); setTimeout(() => { listItem.classList.toggle('checked', checkboxInput.checked); sparaTillstånd(); }, 0); }
+                else if (e.target.closest('.custom-checkbox')) { 
+                    const listItem = e.target.closest('li.list-item');
+                    const checkboxInput = listItem.querySelector('input[type="checkbox"]');
+                    // Låt webbläsaren hantera check-bytet via labeln, synka sedan class & spara
+                    setTimeout(() => { 
+                        listItem.classList.toggle('checked', checkboxInput.checked);
+                        sparaTillstånd(true); // Spara direkt efter check
+                    }, 0);
+                }
                 else if (e.target.closest('.sensorik-wrapper')) { e.target.closest('.list-item').classList.toggle("expanded"); }
             };
-            listContainer.oninput = function(e) { if (e.target.matches('[contenteditable="true"]')) { sparaTillstånd(); } };
+            listContainer.oninput = function(e) { if (e.target.matches('[contenteditable="true"]')) { sparaTillstånd(true); } };
             listContainer.onkeydown = function(e) {
                 if (e.target.matches('.item-text') && e.key === "Enter") {
                     e.preventDefault(); const nuvarandeVara = e.target.closest('li'); const nyVara = skapaVaraElement();
@@ -230,7 +270,7 @@
             const menu = document.getElementById('list-switcher-menu');
             const btn = document.getElementById('list-switcher-btn');
             const aktivLista = appState.lists[appState.activeListId];
-            if (!aktivLista) return;
+            if (!aktivLista) { btn.textContent = 'Ingen lista vald ▾'; menu.innerHTML = ''; return; }
             btn.textContent = `${aktivLista.name} ▾`;
             menu.innerHTML = '';
             const andraListor = Object.values(appState.lists).filter(list => list.id !== appState.activeListId);
@@ -253,7 +293,6 @@
             }
             render();
             renderListSwitcher();
-            sparaTillstånd();
         }
 
         function createNewList() {
@@ -267,19 +306,22 @@
                 const ul = section.querySelector('ul');
                 ul.appendChild(skapaVaraElement());
                 tempDiv.appendChild(section);
-                appState.lists[nyId] = { id: nyId, name: nyttNamn.trim(), htmlContent: tempDiv.innerHTML };
+                const nyLista = { id: nyId, name: nyttNamn.trim(), htmlContent: tempDiv.innerHTML, history: [tempDiv.innerHTML], historyIndex: 0 };
+                appState.lists[nyId] = nyLista;
                 switchList(nyId);
             }
         }
 
         function renameCurrentList() {
             const aktivLista = appState.lists[appState.activeListId];
-            const nyttNamn = prompt("Ange nytt namn för listan:", aktivLista.name);
-            if (nyttNamn && nyttNamn.trim()) {
+            const gammaltNamn = aktivLista.name;
+            const nyttNamn = prompt("Ange nytt namn för listan:", gammaltNamn);
+            if (nyttNamn && nyttNamn.trim() !== gammaltNamn) {
                 aktivLista.name = nyttNamn.trim();
                 renderListSwitcher();
-                sparaTillstånd(true);
+                sparaTillstånd();
             }
+            toggleListSwitcher();
         }
         
         function deleteCurrentList() {
@@ -292,7 +334,6 @@
             if (confirm(`Är du säker på att du vill radera listan "${aktivLista.name}"? Detta kan inte ångras.`)) {
                 delete appState.lists[appState.activeListId];
                 const firstRemainingListId = Object.keys(appState.lists)[0];
-                appState.activeListId = firstRemainingListId; // Tillfälligt sätta en aktiv lista
                 switchList(firstRemainingListId);
             }
         }
@@ -301,7 +342,6 @@
             const sparadData = localStorage.getItem(MULTILIST_STORAGE_KEY);
             if (sparadData) {
                 appState = JSON.parse(sparadData);
-                // Säkerhetskoll om den aktiva listan har raderats
                 if (!appState.lists[appState.activeListId]) {
                     appState.activeListId = Object.keys(appState.lists)[0] || null;
                 }
@@ -318,9 +358,16 @@
                 appState = {
                     activeListId: defaultListId,
                     lists: {
-                        [defaultListId]: { id: defaultListId, name: "Min Inköpslista", htmlContent: tempDiv.innerHTML }
+                        [defaultListId]: { id: defaultListId, name: "Min Inköpslista", htmlContent: tempDiv.innerHTML, history: [tempDiv.innerHTML], historyIndex: 0 }
                     }
                 };
+            }
+            // Säkerställ att alla listor har historik-egenskaper
+            for(const listId in appState.lists) {
+                if (!appState.lists[listId].history) {
+                    appState.lists[listId].history = [appState.lists[listId].htmlContent];
+                    appState.lists[listId].historyIndex = 0;
+                }
             }
             bytVy('planering');
             renderListSwitcher();
