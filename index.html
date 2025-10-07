@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TryggtBesök – Inköpslista</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#01285C"/>
+
     <style>
         :root {
             --bakgrund: #F8F9FA; --textfärg: #212529; --primärfärg: #01285C;
@@ -90,44 +94,46 @@
         const kategoriData = { 'frukt_gront': { namn: 'Frukt & Grönt', nummer: 1, färg: '#588157' }, 'brod_bageri': { namn: 'Bageri', nummer: 2, färg: '#BC6C25' }, 'skafferi': { namn: 'Skafferi', nummer: 3, färg: '#606C38' }, 'kott_fisk': { namn: 'Kött, Fisk & Chark', nummer: 4, färg: '#D00000' }, 'mejeri_kylt': { namn: 'Mejeri & Kylt', nummer: 5, färg: '#0077B6' }, 'frys': { namn: 'Frysdisken', nummer: 6, färg: '#48CAE4' }, 'dryck': { namn: 'Drycker', nummer: 7, färg: '#F77F00' }, 'snacks_godis': { namn: 'Snacks & Godis', nummer: 8, färg: '#7209B7' }, 'hem_hygien': { namn: 'Hem & Hygien', nummer: 9, färg: '#3A0CA3' }, 'ovrigt': { namn: 'Övrigt', nummer: 99, färg: '#6c757d' } };
         const butiksKatalog = { 'mjölk': { kategoriKey: 'mejeri_kylt', plats: 30, ljud: 'låg', ljus: 'stark', tips: 'Kylarna kan brumma en del.' }, 'ägg': { kategoriKey: 'mejeri_kylt', plats: 31, ljud: 'låg', ljus: 'stark', tips: 'Bredvid mjölken.' }, 'yoghurt': { kategoriKey: 'mejeri_kylt', plats: 32, ljud: 'låg', ljus: 'stark', tips: 'Olika smaker kan stå utspritt.' }, 'ost': { kategoriKey: 'mejeri_kylt', plats: 33, ljud: 'låg', ljus: 'stark', tips: 'Stark doft vid delikatessdisken.' }, 'banan': { kategoriKey: 'frukt_gront', plats: 2, ljud: 'låg', ljus: 'normal', tips: 'Ofta precis vid ingången.' }, 'äpple': { kategoriKey: 'frukt_gront', plats: 3, ljud: 'låg', ljus: 'normal', tips: 'Tänk på att välja fasta äpplen.' }, 'tomat': { kategoriKey: 'frukt_gront', plats: 4, ljud: 'låg', ljus: 'normal', tips: 'Finns både i lösvikt och förpackat.' }, 'bröd': { kategoriKey: 'brod_bageri', plats: 5, ljud: 'låg', ljus: 'normal', tips: 'Nygräddat bröd kan dofta starkt.' }, 'pasta': { kategoriKey: 'skafferi', plats: 15, ljud: 'låg', ljus: 'normal', tips: 'Finns på gång 4.' }, 'ris': { kategoriKey: 'skafferi', plats: 16, ljud: 'låg', ljus: 'normal', tips: 'Stora säckar längst ner på hyllan.' }, 'köttfärs': { kategoriKey: 'kott_fisk', plats: 25, ljud: 'låg', ljus: 'stark', tips: 'Kyldisken för kött.' }, 'kyckling': { kategoriKey: 'kott_fisk', plats: 26, ljud: 'låg', ljus: 'stark', tips: 'Finns både färsk och fryst.' }, 'korv': { kategoriKey: 'kott_fisk', plats: 27, ljud: 'låg', ljus: 'stark', tips: 'Många olika sorter.' }, 'frysta ärtor': { kategoriKey: 'frys', plats: 40, ljud: 'hög', ljus: 'stark', tips: 'Frysdiskarna kan låta mycket.' }, 'glass': { kategoriKey: 'frys', plats: 41, ljud: 'hög', ljus: 'stark', tips: 'Ofta i slutet av fryssektionen.' }, 'läsk': { kategoriKey: 'dryck', plats: 50, ljud: 'normal', ljus: 'normal', tips: 'Pantstationen är ofta bullrig.' }, 'chips': { kategoriKey: 'snacks_godis', plats: 60, ljud: 'normal', ljus: 'normal', tips: 'Ofta placerat nära dryckesavdelningen.' }, 'tvättmedel': { kategoriKey: 'hem_hygien', plats: 70, ljud: 'låg', ljus: 'stark', tips: 'Kan ha starka dofter.' }, 'schampo': { kategoriKey: 'hem_hygien', plats: 71, ljud: 'låg', ljus: 'stark', tips: 'Många olika dofter.' }, };
         
-        const MULTILIST_STORAGE_KEY = "tryggtbesok_multilist_v3_robust";
+        const MULTILIST_STORAGE_KEY = "tryggtbesok_multilist_v4_skottsaker";
         let aktivVy = 'planering';
         let appState = { activeListId: null, lists: {} };
 
-        function sparaTillstånd() {
+        // SKOTTSÄKER SPARFUNKTION
+        function sparaTillstånd(addHistory = false) {
             const listContainer = document.getElementById("list-container");
             const aktivLista = appState.lists[appState.activeListId];
             if (!aktivLista) return;
 
-            // Spara bara om vi är i planeringsvyn
+            // Spara bara om vi är i planeringsvyn, för att undvika att Butiksvyns HTML sparas
             if (aktivVy === 'planering') {
                 const nuvarandeInnehåll = listContainer.innerHTML;
-                
-                // Jämför med senaste historik-steget för att undvika dubbletter
-                const senasteHistorik = aktivLista.history[aktivLista.historyIndex];
-                if (nuvarandeInnehåll !== senasteHistorik) {
-                    aktivLista.historyIndex++;
-                    aktivLista.history.splice(aktivLista.historyIndex); // Ta bort framtida "redo"-steg
-                    aktivLista.history.push(nuvarandeInnehåll);
-                }
-                
                 aktivLista.htmlContent = nuvarandeInnehåll;
+
+                // Hantera historik bara vid explicita, undo-bara handlingar
+                if (addHistory) {
+                    const senasteHistorik = aktivLista.history[aktivLista.historyIndex];
+                    if (nuvarandeInnehåll !== senasteHistorik) {
+                        aktivLista.historyIndex++;
+                        aktivLista.history.splice(aktivLista.historyIndex);
+                        aktivLista.history.push(nuvarandeInnehåll);
+                    }
+                }
             }
-            
             localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState));
         }
         
+        // SKOTTSÄKER ÅNGRA/GÖR OM
         function undo() {
             if (aktivVy !== 'planering') return;
             const aktivLista = appState.lists[appState.activeListId];
             if (aktivLista && aktivLista.historyIndex > 0) {
                 aktivLista.historyIndex--;
                 const föregående = aktivLista.history[aktivLista.historyIndex];
+                aktivLista.htmlContent = föregående; // Synka huvud-innehållet först
                 document.getElementById("list-container").innerHTML = föregående;
-                aktivLista.htmlContent = föregående; // Synka huvud-innehållet
-                localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState));
                 bifogaLyssnare();
                 syncCheckboxStates();
+                sparaTillstånd(); // Spara det nya läget (utan att lägga till i historiken)
             }
         }
 
@@ -137,11 +143,11 @@
             if (aktivLista && aktivLista.historyIndex < aktivLista.history.length - 1) {
                 aktivLista.historyIndex++;
                 const nästa = aktivLista.history[aktivLista.historyIndex];
+                aktivLista.htmlContent = nästa; // Synka huvud-innehållet först
                 document.getElementById("list-container").innerHTML = nästa;
-                aktivLista.htmlContent = nästa; // Synka huvud-innehållet
-                localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState));
                 bifogaLyssnare();
                 syncCheckboxStates();
+                sparaTillstånd(); // Spara det nya läget
             }
         }
 
@@ -233,11 +239,9 @@
                 else if (e.target.closest('.custom-checkbox')) { 
                     const listItem = e.target.closest('li.list-item');
                     const checkboxInput = listItem.querySelector('input[type="checkbox"]');
-                    // Låt webbläsaren hantera check-bytet via labeln, synka sedan class & spara
-                    setTimeout(() => { 
-                        listItem.classList.toggle('checked', checkboxInput.checked);
-                        sparaTillstånd(true); // Spara direkt efter check
-                    }, 0);
+                    // Synkron hantering: Låt webbläsaren byta status, synka sedan classen och spara.
+                    listItem.classList.toggle('checked', checkboxInput.checked);
+                    sparaTillstånd(true);
                 }
                 else if (e.target.closest('.sensorik-wrapper')) { e.target.closest('.list-item').classList.toggle("expanded"); }
             };
@@ -314,14 +318,16 @@
 
         function renameCurrentList() {
             const aktivLista = appState.lists[appState.activeListId];
-            const gammaltNamn = aktivLista.name;
-            const nyttNamn = prompt("Ange nytt namn för listan:", gammaltNamn);
-            if (nyttNamn && nyttNamn.trim() !== gammaltNamn) {
+            if (!aktivLista) return;
+            const nyttNamn = prompt("Ange nytt namn för listan:", aktivLista.name);
+            if (nyttNamn && nyttNamn.trim()) {
                 aktivLista.name = nyttNamn.trim();
                 renderListSwitcher();
                 sparaTillstånd();
             }
-            toggleListSwitcher();
+            if(document.getElementById('list-switcher-menu').classList.contains('active')){
+                toggleListSwitcher();
+            }
         }
         
         function deleteCurrentList() {
@@ -342,7 +348,7 @@
             const sparadData = localStorage.getItem(MULTILIST_STORAGE_KEY);
             if (sparadData) {
                 appState = JSON.parse(sparadData);
-                if (!appState.lists[appState.activeListId]) {
+                if (!appState.lists || Object.keys(appState.lists).length === 0 || !appState.lists[appState.activeListId]) {
                     appState.activeListId = Object.keys(appState.lists)[0] || null;
                 }
             }
@@ -362,9 +368,9 @@
                     }
                 };
             }
-            // Säkerställ att alla listor har historik-egenskaper
+            // Säkerställ att alla listor har historik-egenskaper (viktigt för äldre sparade listor)
             for(const listId in appState.lists) {
-                if (!appState.lists[listId].history) {
+                if (!appState.lists[listId].history || !Array.isArray(appState.lists[listId].history)) {
                     appState.lists[listId].history = [appState.lists[listId].htmlContent];
                     appState.lists[listId].historyIndex = 0;
                 }
@@ -401,6 +407,17 @@
                 processBtn.textContent = 'Skapa lista';
                 textArea.value = '';
             }
+        }
+
+        // NYTT FÖR OFFLINE/PWA: Aktivera assistenten
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registrerad med scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker-registrering misslyckades: ', err);
+                });
+            });
         }
     </script>
 </body>
