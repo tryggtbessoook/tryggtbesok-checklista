@@ -45,17 +45,34 @@
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
-        /* FIX 1 (NY METOD): Checkbox byggd med ren CSS för att eliminera SVG-buggar */
+        /* FIX 1 & 2 (NY METOD): Checkbox byggd med ren, robust CSS för att eliminera buggar */
         .custom-checkbox { position: relative; width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0; border: 0.15em solid #BDBDBD; border-radius: 0.25em; cursor: pointer; background-color: #fff; }
-        .custom-checkbox::after { content: ''; position: absolute; left: 0.7em; top: 0.25em; width: 0.5em; height: 1.2em; border: solid var(--primärfärg); border-width: 0 0.25em 0.25em 0; transform: rotate(45deg) scale(0); transition: transform 0.2s ease-in-out; }
+        .custom-checkbox::after {
+            content: '';
+            /* Positionering för centrering */
+            position: absolute;
+            top: 45%; /* Justerad för optisk centrering */
+            left: 50%;
+            /* Storlek på bocken */
+            width: 0.6em;
+            height: 1.2em;
+            /* Skapa V-formen */
+            border: solid var(--primärfärg);
+            border-width: 0 0.25em 0.25em 0;
+            /* Startläge: Osynlig och roterad */
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(45deg);
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
         input[type="checkbox"] { opacity: 0; position: absolute; }
-        input[type="checkbox"]:checked + .custom-checkbox::after { transform: rotate(45deg) scale(1); }
+        input[type="checkbox"]:checked + .custom-checkbox::after {
+            opacity: 1; /* Gör den synlig */
+        }
         
         .item-text-wrapper { flex: 1; }
         .item-text { font-size: 1.2em; outline: none; }
         .item-text[data-placeholder]:empty::before { content: attr(data-placeholder); color: #aaa; cursor: text; }
         
-        /* FIX 2 (NY METOD): Absolut positionering för garanterad centrering */
         .vara-nummer { position: relative; width: 25px; height: 25px; border-radius: 50%; color: white; font-weight: bold; font-size: 0.9em; margin-right: 10px; flex-shrink: 0; }
         .vara-nummer > span { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
@@ -88,7 +105,7 @@
         let aktivVy = 'planering';
         let appState = { activeListId: null, lists: {}, history: {}, historyIndex: {} };
 
-        // FIX 3: Eventlyssnaren 'blur' används för att garantera att text sparas när man lämnar ett fält
+        // Eventlyssnare är oförändrade och robusta
         function attachGlobalListeners() {
             const listContainer = document.getElementById('list-container');
             listContainer.addEventListener('click', e => {
@@ -113,6 +130,7 @@
             });
         }
         
+        // All Javascript-logik är oförändrad från förra versionen
         function uppdateraVaraText(itemId, newText, addToHistory) {
             const aktivLista = appState.lists[appState.activeListId];
             if (!aktivLista) return;
