@@ -44,10 +44,10 @@
         li.list-item { position: relative; background-color: #FFFFFF; border-radius: var(--ram-radie); padding: 15px; padding-right: 50px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.2s ease-in-out; border-left: 5px solid transparent; }
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
-        .custom-checkbox { width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0; border: 0.15em solid #BDBDBD; border-radius: 0.25em; display: grid; place-content: center; cursor: pointer; background-color: #fff; }
+        .custom-checkbox { width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0; border: 0.15em solid #BDBDBD; border-radius: 0.25em; display: grid; place-items: center; cursor: pointer; background-color: #fff; }
         .custom-checkbox svg { width: 1.8em; height: 1.8em; stroke: var(--primärfärg); stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 0.2s ease-in-out; }
-        input[type="checkbox"] { display: none; }
-        input[type="checkbox"]:checked + .custom-checkbox svg { stroke-dashoffset: 0; }
+        input[type="checkbox"] { opacity: 0; position: absolute; }
+        input[type="checkbox"]:checked + label > svg { stroke-dashoffset: 0; }
         .item-text-wrapper { flex: 1; }
         .item-text { font-size: 1.2em; outline: none; }
         .item-text[data-placeholder]:empty::before { content: attr(data-placeholder); color: #aaa; cursor: text; }
@@ -69,17 +69,8 @@
 </head>
 <body>
     <h1>TryggtBesök – Inköpslista</h1>
-    <div class="toolbar">
-        <div class="list-switcher"> <button id="list-switcher-btn" onclick="toggleListSwitcher()">Min Inköpslista ▾</button> <div id="list-switcher-menu" class="list-switcher-menu"></div> </div>
-        <div class="vy-vaxlare"> <button id="planeringsvyBtn" class="active" onclick="bytVy('planering')">📝 Planeringsvy</button> <button id="butiksvyBtn" onclick="bytVy('butik')">🛒 Butiksvy</button> </div>
-        <div class="undo-redo-controls"> <div id="undoBtn" class="control-button disabled" onclick="undo()"> <button>⟲</button> <label>Ångra</label> </div> <div id="redoBtn" class="control-button disabled" onclick="redo()"> <button>⟳</button> <label>Gör om</label> </div> </div>
-    </div>
-    <div class="ai-importer">
-        <h3>Magisk Lista ✨</h3>
-        <p>Klistra in en hel lista, ett recept eller en rörig anteckning, så sorterar vi ut varorna åt dig.</p>
-        <textarea id="ai-input" placeholder="Ex: 2L mjölk, bröd, korv från charken och ägg..."></textarea>
-        <button id="ai-process-btn" onclick="hanteraMagiskLista()">Skapa lista</button>
-    </div>
+    <div class="toolbar"> <div class="list-switcher"> <button id="list-switcher-btn" onclick="toggleListSwitcher()">Min Inköpslista ▾</button> <div id="list-switcher-menu" class="list-switcher-menu"></div> </div> <div class="vy-vaxlare"> <button id="planeringsvyBtn" class="active" onclick="bytVy('planering')">📝 Planeringsvy</button> <button id="butiksvyBtn" onclick="bytVy('butik')">🛒 Butiksvy</button> </div> <div class="undo-redo-controls"> <div id="undoBtn" class="control-button disabled" onclick="undo()"> <button>⟲</button> <label>Ångra</label> </div> <div id="redoBtn" class="control-button disabled" onclick="redo()"> <button>⟳</button> <label>Gör om</label> </div> </div> </div>
+    <div class="ai-importer"> <h3>Magisk Lista ✨</h3> <p>Klistra in en hel lista, ett recept eller en rörig anteckning, så sorterar vi ut varorna åt dig.</p> <textarea id="ai-input" placeholder="Ex: 2L mjölk, bröd, korv från charken och ägg..."></textarea> <button id="ai-process-btn" onclick="hanteraMagiskLista()">Skapa lista</button> </div>
     <div id="list-container"></div>
     <button id="addCategoryBtn" onclick="skapaKategori()">➕ Lägg till kategori</button>
     
@@ -96,50 +87,34 @@
             listContainer.addEventListener('click', e => {
                 const target = e.target;
                 const listItem = target.closest('li.list-item');
+                if (target.closest('.custom-checkbox') && listItem) { e.preventDefault(); toggleVaraChecked(listItem.dataset.itemId); return; }
                 const section = target.closest('section');
-                if (target.closest('.custom-checkbox') && listItem) { e.preventDefault(); toggleVaraChecked(listItem.dataset.itemId); } 
-                else if (target.matches('.delete-item-btn') && listItem) { raderaVara(listItem.dataset.itemId); } 
+                if (target.matches('.delete-item-btn') && listItem) { raderaVara(listItem.dataset.itemId); } 
                 else if (target.matches('.delete-category-btn') && section) { raderaKategori(section.dataset.categoryId); } 
                 else if (target.closest('.sensorik-wrapper') && listItem) { listItem.classList.toggle("expanded"); }
             });
-            listContainer.addEventListener('focusout', e => { if (e.target.matches('.item-text')) { const itemId = e.target.closest('li.list-item').dataset.itemId; uppdateraVaraText(itemId, e.target.textContent, true); } else if (e.target.matches('h2')) { const categoryId = e.target.closest('section').dataset.categoryId; uppdateraKategoriTitel(categoryId, e.target.textContent, true); } });
-            
-            // FIX 3: Eventlyssnare för att hantera Enter-tryck och undvika dataförlust
+            listContainer.addEventListener('blur', e => { if (e.target.matches('.item-text')) { const itemId = e.target.closest('li.list-item').dataset.itemId; uppdateraVaraText(itemId, e.target.textContent, true); } else if (e.target.matches('h2')) { const categoryId = e.target.closest('section').dataset.categoryId; uppdateraKategoriTitel(categoryId, e.target.textContent, true); } }, true);
             listContainer.addEventListener('keydown', e => {
                 if (e.target.matches('.item-text') && e.key === "Enter") {
                     e.preventDefault();
                     const currentItemElem = e.target.closest('li.list-item');
                     if (currentItemElem) {
-                        // Steg 1: Spara texten från fältet du lämnar, men utan att skapa en historikpunkt för enbart textändringen.
                         uppdateraVaraText(currentItemElem.dataset.itemId, e.target.textContent, false);
-                        // Steg 2: Skapa den nya varan. Denna funktion kommer att skapa en historikpunkt för hela operationen.
                         skapaNyVara(currentItemElem.dataset.itemId, true);
                     }
                 }
             });
         }
         
-        // FIX 3: Modifierad funktion för att styra när historik ska skapas
         function uppdateraVaraText(itemId, newText, addToHistory) {
             const aktivLista = appState.lists[appState.activeListId];
-            for (const category of aktivLista.categories) {
-                const item = category.items.find(i => i.id === itemId);
-                if (item && item.text !== newText) {
-                    item.text = newText;
-                    if (addToHistory) { sparaTillstånd(true); }
-                    return;
-                }
-            }
+            for (const category of aktivLista.categories) { const item = category.items.find(i => i.id === itemId); if (item && item.text !== newText) { item.text = newText; if (addToHistory) { sparaTillstånd(true); } return; } }
         }
         function uppdateraKategoriTitel(categoryId, newTitle, addToHistory) {
             const aktivLista = appState.lists[appState.activeListId];
             const category = aktivLista.categories.find(c => c.id === categoryId);
-            if (category && category.title !== newTitle) {
-                category.title = newTitle;
-                if (addToHistory) { sparaTillstånd(true); }
-            }
+            if (category && category.title !== newTitle) { category.title = newTitle; if (addToHistory) { sparaTillstånd(true); } }
         }
-
         function toggleVaraChecked(itemId) {
             const aktivLista = appState.lists[appState.activeListId];
             let isCheckedNow = false;
@@ -149,6 +124,18 @@
             if (listItemElem) { const checkboxInput = listItemElem.querySelector('input[type="checkbox"]'); listItemElem.classList.toggle('checked', isCheckedNow); if (checkboxInput) { checkboxInput.checked = isCheckedNow; } }
         }
         
+        // FIX 1: Robust SVG-skapande via Javascript för att garantera korrekt rendering
+        function createCheckboxSVG() {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("viewBox", "0 0 100 100");
+            const polyline = document.createElementNS(svgNS, "polyline");
+            polyline.setAttribute("points", "20 60 40 80 80 30");
+            polyline.setAttribute("fill", "none"); // Tvingar bort fyllnad
+            svg.appendChild(polyline);
+            return svg;
+        }
+
         function skapaVaraElement(item) {
             const li = document.createElement("li");
             li.className = "list-item";
@@ -160,25 +147,21 @@
             const harSensorik = varaData.ljud === 'hög' || varaData.ljus === 'stark';
             const sensorikHTML = `<div class="sensorik-wrapper"><div class="sensoriska-ikoner">${varaData.ljud === 'hög' ? '<span>🔊</span>' : ''}${varaData.ljus === 'stark' ? '<span>✨</span>' : ''}</div>${harSensorik ? '<label>Tips</label>' : ''}</div>`;
             const checkboxId = `checkbox-${item.id}`;
-            // FIX 1: Lagt till fill="none" direkt i SVG-strängen för att tvinga bort den svarta pricken.
-            const svgHTML = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polyline points="20 60 40 80 80 30" fill="none" /></svg>`;
             li.innerHTML = `
                 <div class="item-header">
                     <input type="checkbox" id="${checkboxId}" ${item.checked ? 'checked' : ''}>
-                    <label for="${checkboxId}" class="custom-checkbox">${svgHTML}</label>
+                    <label for="${checkboxId}" class="custom-checkbox"></label>
                     ${varaData.kategori && aktivVy === 'butik' ? `<div class="vara-nummer" style="background-color: ${kategoriFärg};">${varaData.kategori.nummer}</div>` : ''}
-                    <div class="item-text-wrapper">
-                        <div contenteditable="${aktivVy === 'planering'}" class="item-text" data-placeholder="Skriv en vara...">${item.text}</div>
-                    </div>
+                    <div class="item-text-wrapper"> <div contenteditable="${aktivVy === 'planering'}" class="item-text" data-placeholder="Skriv en vara...">${item.text}</div> </div>
                     ${aktivVy === 'butik' ? sensorikHTML : ''}
                 </div>
                 ${aktivVy === 'butik' && harSensorik ? `<div class="item-detaljer"><p><strong>Tips:</strong> ${varaData.tips}</p></div>` : ''}
                 <button class="delete-btn delete-item-btn" style="display: ${aktivVy === 'planering' ? 'block' : 'none'};">×</button>
             `;
+            li.querySelector('.custom-checkbox').appendChild(createCheckboxSVG()); // Använder den nya robusta funktionen
             return li;
         }
 
-        // --- All övrig Javascript är oförändrad från här och ned ---
         function sparaTillstånd(addHistory = false) { const aktivListaId = appState.activeListId; if (!aktivListaId) return; const currentState = JSON.parse(JSON.stringify(appState.lists[aktivListaId])); if (addHistory) { appState.historyIndex[aktivListaId]++; appState.history[aktivListaId].splice(appState.historyIndex[aktivListaId]); appState.history[aktivListaId].push(currentState); } localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState)); uppdateraUndoRedoKnappar(); }
         function undo() { const aktivListaId = appState.activeListId; if (appState.historyIndex[aktivListaId] > 0) { appState.historyIndex[aktivListaId]--; const föregåendeTillstånd = JSON.parse(JSON.stringify(appState.history[aktivListaId][appState.historyIndex[aktivListaId]])); appState.lists[aktivListaId] = föregåendeTillstånd; render(); sparaTillstånd(false); } }
         function redo() { const aktivListaId = appState.activeListId; if (appState.historyIndex[aktivListaId] < appState.history[aktivListaId].length - 1) { appState.historyIndex[aktivListaId]++; const nästaTillstånd = JSON.parse(JSON.stringify(appState.history[aktivListaId][appState.historyIndex[aktivListaId]])); appState.lists[aktivListaId] = nästaTillstånd; render(); sparaTillstånd(false); } }
