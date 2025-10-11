@@ -45,28 +45,23 @@
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
-        /* FIX 1 & 2 (NY METOD): Checkbox byggd med ren, robust CSS för att eliminera buggar */
+        /* FIX 1 (NY METOD): Checkbox byggd med display:none för att garanterat ta bort pricken */
         .custom-checkbox { position: relative; width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0; border: 0.15em solid #BDBDBD; border-radius: 0.25em; cursor: pointer; background-color: #fff; }
         .custom-checkbox::after {
             content: '';
-            /* Positionering för centrering */
             position: absolute;
-            top: 45%; /* Justerad för optisk centrering */
+            top: 45%;
             left: 50%;
-            /* Storlek på bocken */
             width: 0.6em;
             height: 1.2em;
-            /* Skapa V-formen */
             border: solid var(--primärfärg);
             border-width: 0 0.25em 0.25em 0;
-            /* Startläge: Osynlig och roterad */
-            opacity: 0;
             transform: translate(-50%, -50%) rotate(45deg);
-            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+            display: none; /* Helt borttagen från rendering som standard */
         }
         input[type="checkbox"] { opacity: 0; position: absolute; }
         input[type="checkbox"]:checked + .custom-checkbox::after {
-            opacity: 1; /* Gör den synlig */
+            display: block; /* Visas endast när den är checkad */
         }
         
         .item-text-wrapper { flex: 1; }
@@ -105,7 +100,7 @@
         let aktivVy = 'planering';
         let appState = { activeListId: null, lists: {}, history: {}, historyIndex: {} };
 
-        // Eventlyssnare är oförändrade och robusta
+        // Ingen ändring i Javascriptet, allt är stabilt.
         function attachGlobalListeners() {
             const listContainer = document.getElementById('list-container');
             listContainer.addEventListener('click', e => {
@@ -129,8 +124,6 @@
                 }
             });
         }
-        
-        // All Javascript-logik är oförändrad från förra versionen
         function uppdateraVaraText(itemId, newText, addToHistory) {
             const aktivLista = appState.lists[appState.activeListId];
             if (!aktivLista) return;
@@ -151,7 +144,6 @@
             const listItemElem = document.querySelector(`[data-item-id="${itemId}"]`);
             if (listItemElem) { const checkboxInput = listItemElem.querySelector('input[type="checkbox"]'); listItemElem.classList.toggle('checked', isCheckedNow); if (checkboxInput) { checkboxInput.checked = isCheckedNow; } }
         }
-        
         function skapaVaraElement(item) {
             const li = document.createElement("li");
             li.className = "list-item";
@@ -177,7 +169,6 @@
             `;
             return li;
         }
-
         function sparaTillstånd(addHistory = false) { const aktivListaId = appState.activeListId; if (!aktivListaId) return; const currentState = JSON.parse(JSON.stringify(appState.lists[aktivListaId])); if (addHistory) { appState.historyIndex[aktivListaId]++; appState.history[aktivListaId].splice(appState.historyIndex[aktivListaId]); appState.history[aktivListaId].push(currentState); } localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState)); uppdateraUndoRedoKnappar(); }
         function undo() { const aktivListaId = appState.activeListId; if (appState.historyIndex[aktivListaId] > 0) { appState.historyIndex[aktivListaId]--; const föregåendeTillstånd = JSON.parse(JSON.stringify(appState.history[aktivListaId][appState.historyIndex[aktivListaId]])); appState.lists[aktivListaId] = föregåendeTillstånd; render(); sparaTillstånd(false); } }
         function redo() { const aktivListaId = appState.activeListId; if (appState.historyIndex[aktivListaId] < appState.history[aktivListaId].length - 1) { appState.historyIndex[aktivListaId]++; const nästaTillstånd = JSON.parse(JSON.stringify(appState.history[aktivListaId][appState.historyIndex[aktivListaId]])); appState.lists[aktivListaId] = nästaTillstånd; render(); sparaTillstånd(false); } }
