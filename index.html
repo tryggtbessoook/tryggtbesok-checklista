@@ -44,16 +44,16 @@
         li.list-item { position: relative; background-color: #FFFFFF; border-radius: var(--ram-radie); padding: 15px; padding-right: 50px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.2s ease-in-out; border-left: 5px solid transparent; }
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
-        /* FIX 1: Tvingar vit bakgrund för att eliminera Safari-bugg med svarta rutor */
-        .custom-checkbox { width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0; border: 0.15em solid #BDBDBD; border-radius: 0.25em; display: grid; place-content: center; cursor: pointer; background-color: #fff !important; }
-        .custom-checkbox svg { width: 1.8em; height: 1.8em; stroke: var(--primärfärg); stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 0.2s ease-in-out; }
+        .custom-checkbox { width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0; border: 0.15em solid #BDBDBD; border-radius: 0.25em; display: grid; place-content: center; cursor: pointer; background-color: #fff; }
+        /* FIX 1: Tvingar bort den svarta pricken genom att specificera att SVG:n inte ska ha någon fyllnadsfärg */
+        .custom-checkbox svg { width: 1.8em; height: 1.8em; stroke: var(--primärfärg); stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 0.2s ease-in-out; fill: none; }
         input[type="checkbox"] { display: none; }
         input[type="checkbox"]:checked + .custom-checkbox svg { stroke-dashoffset: 0; }
         .item-text-wrapper { flex: 1; }
         .item-text { font-size: 1.2em; outline: none; }
         .item-text[data-placeholder]:empty::before { content: attr(data-placeholder); color: #aaa; cursor: text; }
-        /* FIX 3: Robust centrering av siffror */
-        .vara-nummer { width: 25px; height: 25px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9em; margin-right: 10px; flex-shrink: 0; }
+        /* FIX 2: Använder en mer robust centreringsmetod för att garantera att siffrorna är i mitten */
+        .vara-nummer { width: 25px; height: 25px; border-radius: 50%; color: white; display: grid; place-items: center; font-weight: bold; font-size: 0.9em; margin-right: 10px; flex-shrink: 0; line-height: 1; }
         .sensorik-wrapper { text-align: center; cursor: pointer; border-radius: var(--ram-radie); padding: 4px; transition: background-color 0.2s ease; margin-left: 1em; }
         .sensorik-wrapper:hover { background-color: var(--hover-bg); }
         .sensoriska-ikoner { display: flex; gap: 8px; justify-content: center; }
@@ -102,16 +102,13 @@
         let aktivVy = 'planering';
         let appState = { activeListId: null, lists: {}, history: {}, historyIndex: {} };
 
-        // --- Huvud-eventlyssnare ---
+        // --- Huvud-eventlyssnare (Samma som förra versionen, logiken är nu korrekt) ---
         function attachGlobalListeners() {
             const listContainer = document.getElementById('list-container');
-            
             listContainer.addEventListener('click', e => {
                 const target = e.target;
                 const listItem = target.closest('li.list-item');
                 const section = target.closest('section');
-
-                // FIX 2: Förhindrar webbläsarens standardbeteende för att ge oss full kontroll
                 if (target.closest('.custom-checkbox') && listItem) {
                     e.preventDefault(); 
                     toggleVaraChecked(listItem.dataset.itemId);
@@ -120,32 +117,13 @@
                 else if (target.matches('.delete-category-btn') && section) { raderaKategori(section.dataset.categoryId); } 
                 else if (target.closest('.sensorik-wrapper') && listItem) { listItem.classList.toggle("expanded"); }
             });
-
-            listContainer.addEventListener('focusout', e => {
-                if (e.target.matches('.item-text')) {
-                    const itemId = e.target.closest('li.list-item').dataset.itemId;
-                    uppdateraVaraText(itemId, e.target.textContent);
-                } else if (e.target.matches('h2')) {
-                    const categoryId = e.target.closest('section').dataset.categoryId;
-                    uppdateraKategoriTitel(categoryId, e.target.textContent);
-                }
-            });
-
-            listContainer.addEventListener('keydown', e => {
-                if (e.target.matches('.item-text') && e.key === "Enter") {
-                    e.preventDefault();
-                    const currentItemId = e.target.closest('li.list-item').dataset.itemId;
-                    skapaNyVara(currentItemId, true);
-                }
-            });
+            listContainer.addEventListener('focusout', e => { if (e.target.matches('.item-text')) { const itemId = e.target.closest('li.list-item').dataset.itemId; uppdateraVaraText(itemId, e.target.textContent); } else if (e.target.matches('h2')) { const categoryId = e.target.closest('section').dataset.categoryId; uppdateraKategoriTitel(categoryId, e.target.textContent); } });
+            listContainer.addEventListener('keydown', e => { if (e.target.matches('.item-text') && e.key === "Enter") { e.preventDefault(); const currentItemId = e.target.closest('li.list-item').dataset.itemId; skapaNyVara(currentItemId, true); } });
         }
         
-        // FIX 2: Helt omskriven funktion för att hantera checkbox-klick robust.
         function toggleVaraChecked(itemId) {
             const aktivLista = appState.lists[appState.activeListId];
             let isCheckedNow = false;
-
-            // 1. Hitta och uppdatera varan i vår datamodell (source of truth)
             for (const category of aktivLista.categories) {
                 const item = category.items.find(i => i.id === itemId);
                 if (item) {
@@ -154,23 +132,15 @@
                     break;
                 }
             }
-            
-            // 2. Spara det nya, korrekta tillståndet. Detta är en ångringsbar handling.
             sparaTillstånd(true);
-
-            // 3. Uppdatera DOM:en direkt för att spegla datamodellen
             const listItemElem = document.querySelector(`[data-item-id="${itemId}"]`);
             if (listItemElem) {
                 const checkboxInput = listItemElem.querySelector('input[type="checkbox"]');
-                // Sätt klass och property baserat på det nya tillståndet i datan
                 listItemElem.classList.toggle('checked', isCheckedNow);
-                if (checkboxInput) {
-                    checkboxInput.checked = isCheckedNow;
-                }
+                if (checkboxInput) { checkboxInput.checked = isCheckedNow; }
             }
         }
-
-        // --- All övrig Javascript (oförändrad från förra versionen) ---
+        // --- All övrig Javascript är oförändrad ---
         function sparaTillstånd(addHistory = false) { const aktivListaId = appState.activeListId; if (!aktivListaId) return; const currentState = JSON.parse(JSON.stringify(appState.lists[aktivListaId])); if (addHistory) { appState.historyIndex[aktivListaId]++; appState.history[aktivListaId].splice(appState.historyIndex[aktivListaId]); appState.history[aktivListaId].push(currentState); } localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState)); uppdateraUndoRedoKnappar(); }
         function undo() { const aktivListaId = appState.activeListId; if (appState.historyIndex[aktivListaId] > 0) { appState.historyIndex[aktivListaId]--; const föregåendeTillstånd = JSON.parse(JSON.stringify(appState.history[aktivListaId][appState.historyIndex[aktivListaId]])); appState.lists[aktivListaId] = föregåendeTillstånd; render(); sparaTillstånd(false); } }
         function redo() { const aktivListaId = appState.activeListId; if (appState.historyIndex[aktivListaId] < appState.history[aktivListaId].length - 1) { appState.historyIndex[aktivListaId]++; const nästaTillstånd = JSON.parse(JSON.stringify(appState.history[aktivListaId][appState.historyIndex[aktivListaId]])); appState.lists[aktivListaId] = nästaTillstånd; render(); sparaTillstånd(false); } }
