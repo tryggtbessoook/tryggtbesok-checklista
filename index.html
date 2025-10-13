@@ -45,23 +45,29 @@
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
-        /* FIX 1 (NY METOD): Checkbox byggd med display:none för att garanterat ta bort pricken */
+        /* FIX 1 (SLUTGILTIG METOD): Checkbox byggd för att vara 100% buggfri */
         .custom-checkbox { position: relative; width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0; border: 0.15em solid #BDBDBD; border-radius: 0.25em; cursor: pointer; background-color: #fff; }
         .custom-checkbox::after {
             content: '';
             position: absolute;
+            /* Startläge: Nollställd och osynlig */
+            width: 0;
+            height: 0;
+            border: solid transparent;
+            border-width: 0;
+            opacity: 0;
+        }
+        input[type="checkbox"] { opacity: 0; position: absolute; }
+        input[type="checkbox"]:checked + .custom-checkbox::after {
+            /* Aktivt läge: Korrekt storlek, centrerad och synlig */
             top: 45%;
             left: 50%;
             width: 0.6em;
             height: 1.2em;
-            border: solid var(--primärfärg);
+            border-color: var(--primärfärg);
             border-width: 0 0.25em 0.25em 0;
             transform: translate(-50%, -50%) rotate(45deg);
-            display: none; /* Helt borttagen från rendering som standard */
-        }
-        input[type="checkbox"] { opacity: 0; position: absolute; }
-        input[type="checkbox"]:checked + .custom-checkbox::after {
-            display: block; /* Visas endast när den är checkad */
+            opacity: 1;
         }
         
         .item-text-wrapper { flex: 1; }
@@ -84,28 +90,18 @@
         .category-header .delete-category-btn { margin-left: 10px; }
         #addCategoryBtn { font-size: 1em; padding: 0.8em 1.2em; margin-top: 1em; cursor: pointer; border: 2px solid var(--accentfärg); background-color: transparent; color: var(--primärfärg); border-radius: var(--ram-radie); font-weight: 600; }
 
-        /* FIX 2 (NYTT): Mobilanpassning för verktygsfältet */
+        /* FIX 2 (Mobilanpassning): Garanterar en bra layout på smala skärmar */
         @media (max-width: 650px) {
-            .toolbar {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.75em;
-            }
-            #list-switcher-btn {
-                width: 100%;
-                box-sizing: border-box;
-            }
-            .vy-vaxlare, .undo-redo-controls {
-                margin: 0 auto;
-            }
+            .toolbar { flex-direction: column; align-items: stretch; gap: 0.75em; }
+            #list-switcher-btn { width: 100%; box-sizing: border-box; }
+            .vy-vaxlare, .undo-redo-controls { margin: 0 auto; }
         }
-
     </style>
 </head>
 <body>
     <h1>TryggtBesök – Inköpslista</h1>
-    <div class="toolbar"> <div class="list-switcher"> <button id="list-switcher-btn" onclick="toggleListSwitcher()">Min Inköpslista ▾</button> <div id="list-switcher-menu" class="list-switcher-menu"></div> </div> <div class="vy-vaxlare"> <button id="planeringsvyBtn" class="active" onclick="bytVy('planering')">📝 Planeringsvy</button> <button id="butiksvyBtn" onclick="bytVy('butik')">🛒 Butiksvy</button> </div> <div class="undo-redo-controls"> <div id="undoBtn" class="control-button disabled" onclick="undo()"> <button>⟲</button> <label>Ångra</label> </div> <div id="redoBtn" class="control-button disabled" onclick="redo()"> <button>⟳</button> <label>Gör om</label> </div> </div> </div>
-    <div class="ai-importer"> <h3>Magisk Lista ✨</h3> <p>Klistra in en hel lista, ett recept eller en rörig anteckning, så sorterar vi ut varorna åt dig.</p> <textarea id="ai-input" placeholder="Ex: 2L mjölk, bröd, korv från charken och ägg..."></textarea> <button id="ai-process-btn" onclick="hanteraMagiskLista()">Skapa lista</button> </div>
+    <div class="toolbar"> <div class="list-switcher"> <button id="list-switcher-btn" onclick="toggleListSwitcher()" aria-haspopup="true" aria-expanded="false">Min Inköpslista ▾</button> <div id="list-switcher-menu" class="list-switcher-menu"></div> </div> <div class="vy-vaxlare"> <button id="planeringsvyBtn" class="active" onclick="bytVy('planering')">📝 Planeringsvy</button> <button id="butiksvyBtn" onclick="bytVy('butik')">🛒 Butiksvy</button> </div> <div class="undo-redo-controls"> <div id="undoBtn" class="control-button disabled" onclick="undo()" role="button" aria-label="Ångra"> <button>⟲</button> <label>Ångra</label> </div> <div id="redoBtn" class="control-button disabled" onclick="redo()" role="button" aria-label="Gör om"> <button>⟳</button> <label>Gör om</label> </div> </div> </div>
+    <div class="ai-importer"> <h3>Magisk Lista ✨</h3> <p>Klistra in en hel lista, ett recept eller en rörig anteckning, så sorterar vi ut varorna åt dig.</p> <textarea id="ai-input" placeholder="Ex: 2L mjölk, bröd, korv från charken och ägg..." aria-label="Textfält för Magisk Lista"></textarea> <button id="ai-process-btn" onclick="hanteraMagiskLista()">Skapa lista</button> </div>
     <div id="list-container"></div>
     <button id="addCategoryBtn" onclick="skapaKategori()">➕ Lägg till kategori</button>
     
@@ -170,20 +166,22 @@
             const kategoriFärg = varaData.kategori ? varaData.kategori.färg : 'transparent';
             li.style.borderLeftColor = kategoriFärg;
             const harSensorik = varaData.ljud === 'hög' || varaData.ljus === 'stark';
-            const sensorikHTML = `<div class="sensorik-wrapper"><div class="sensoriska-ikoner">${varaData.ljud === 'hög' ? '<span>🔊</span>' : ''}${varaData.ljus === 'stark' ? '<span>✨</span>' : ''}</div>${harSensorik ? '<label>Tips</label>' : ''}</div>`;
+            const sensorikHTML = `<div class="sensorik-wrapper" role="button" aria-label="Visa sensoriska tips"><div class="sensoriska-ikoner">${varaData.ljud === 'hög' ? '<span aria-label="Hög ljudnivå">🔊</span>' : ''}${varaData.ljus === 'stark' ? '<span aria-label="Starkt ljus">✨</span>' : ''}</div>${harSensorik ? '<label>Tips</label>' : ''}</div>`;
             const checkboxId = `checkbox-${item.id}`;
             const nummerHTML = varaData.kategori && aktivVy === 'butik' ? `<div class="vara-nummer" style="background-color: ${kategoriFärg};"><span>${varaData.kategori.nummer}</span></div>` : '';
             li.innerHTML = `
                 <div class="item-header">
-                    <input type="checkbox" id="${checkboxId}" ${item.checked ? 'checked' : ''}>
+                    <input type="checkbox" id="${checkboxId}" ${item.checked ? 'checked' : ''} aria-labelledby="item-text-${item.id}">
                     <label for="${checkboxId}" class="custom-checkbox"></label>
                     ${nummerHTML}
-                    <div class="item-text-wrapper"> <div contenteditable="${aktivVy === 'planering'}" class="item-text" data-placeholder="Skriv en vara...">${item.text}</div> </div>
+                    <div class="item-text-wrapper"> <div id="item-text-${item.id}" contenteditable="${aktivVy === 'planering'}" class="item-text" data-placeholder="Skriv en vara...">${item.text}</div> </div>
                     ${aktivVy === 'butik' ? sensorikHTML : ''}
                 </div>
                 ${aktivVy === 'butik' && harSensorik ? `<div class="item-detaljer"><p><strong>Tips:</strong> ${varaData.tips}</p></div>` : ''}
-                <button class="delete-btn delete-item-btn" style="display: ${aktivVy === 'planering' ? 'block' : 'none'};">×</button>
+                <button class="delete-btn delete-item-btn" style="display: ${aktivVy === 'planering' ? 'block' : 'none'};" aria-label="Radera vara"></button>
             `;
+            const deleteBtn = li.querySelector('.delete-item-btn');
+            if (deleteBtn) deleteBtn.innerHTML = '×';
             return li;
         }
         function sparaTillstånd(addHistory = false) { const aktivListaId = appState.activeListId; if (!aktivListaId) return; const currentState = JSON.parse(JSON.stringify(appState.lists[aktivListaId])); if (addHistory) { appState.historyIndex[aktivListaId]++; appState.history[aktivListaId].splice(appState.historyIndex[aktivListaId]); appState.history[aktivListaId].push(currentState); } localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState)); uppdateraUndoRedoKnappar(); }
@@ -193,15 +191,15 @@
         function bytVy(vy) { aktivVy = vy; document.getElementById('planeringsvyBtn').classList.toggle('active', vy === 'planering'); document.getElementById('butiksvyBtn').classList.toggle('active', vy === 'butik'); render(); }
         function render() { const listContainer = document.getElementById('list-container'); listContainer.innerHTML = ''; const aktivLista = appState.lists[appState.activeListId]; if (!aktivLista) { uppdateraRedigeringsläge(); return; } if (aktivVy === 'planering') { aktivLista.categories.forEach(kategori => { listContainer.appendChild(skapaKategoriElement(kategori)); }); } else { let allaVaror = []; aktivLista.categories.forEach(kategori => { kategori.items.forEach(item => { const varaData = hittaVaraIDatabas(item.text); allaVaror.push({ ...varaData, text: item.text, checked: item.checked, id: item.id }); }); }); allaVaror.sort((a, b) => { const katANum = a.kategori ? a.kategori.nummer : 999; const katBNum = b.kategori ? b.kategori.nummer : 999; if (katANum !== katBNum) return katANum - katBNum; return a.plats - b.plats; }); let nuvarandeKategoriNummer = -1; allaVaror.forEach(vara => { if (vara.kategori && vara.kategori.nummer !== nuvarandeKategoriNummer) { nuvarandeKategoriNummer = vara.kategori.nummer; const kategoriRubrik = document.createElement('h2'); kategoriRubrik.className = 'kategori-rubrik'; kategoriRubrik.textContent = `${vara.kategori.nummer}. ${vara.kategori.namn}`; kategoriRubrik.style.backgroundColor = vara.kategori.färg; kategoriRubrik.style.color = 'white'; kategoriRubrik.style.padding = '8px 15px'; kategoriRubrik.style.borderRadius = 'var(--ram-radie)'; kategoriRubrik.style.marginTop = '2.5em'; listContainer.appendChild(kategoriRubrik); } listContainer.appendChild(skapaVaraElement(vara)); }); } uppdateraRedigeringsläge(); uppdateraUndoRedoKnappar(); }
         function uppdateraRedigeringsläge() { const isPlanering = aktivVy === 'planering'; document.getElementById('addCategoryBtn').style.display = isPlanering ? 'block' : 'none'; document.querySelector('.undo-redo-controls').style.display = isPlanering ? 'flex' : 'none'; document.querySelector('.ai-importer').style.display = isPlanering ? 'block' : 'none'; }
-        function skapaKategoriElement(kategori) { const section = document.createElement("section"); section.dataset.categoryId = kategori.id; const header = document.createElement('div'); header.className = 'category-header'; const h2 = document.createElement('h2'); h2.textContent = kategori.title; h2.contentEditable = aktivVy === 'planering'; header.appendChild(h2); const deleteBtn = document.createElement('button'); deleteBtn.className = 'delete-btn delete-category-btn'; deleteBtn.innerHTML = '×'; deleteBtn.style.display = aktivVy === 'planering' ? 'inline-block' : 'none'; header.appendChild(deleteBtn); section.appendChild(header); const ul = document.createElement('ul'); kategori.items.forEach(item => ul.appendChild(skapaVaraElement(item))); section.appendChild(ul); return section; }
+        function skapaKategoriElement(kategori) { const section = document.createElement("section"); section.dataset.categoryId = kategori.id; const header = document.createElement('div'); header.className = 'category-header'; const h2 = document.createElement('h2'); h2.textContent = kategori.title; h2.contentEditable = aktivVy === 'planering'; header.appendChild(h2); const deleteBtn = document.createElement('button'); deleteBtn.className = 'delete-btn delete-category-btn'; deleteBtn.innerHTML = '×'; deleteBtn.style.display = aktivVy === 'planering' ? 'inline-block' : 'none'; deleteBtn.setAttribute('aria-label', `Radera kategori ${kategori.title}`); header.appendChild(deleteBtn); section.appendChild(header); const ul = document.createElement('ul'); kategori.items.forEach(item => ul.appendChild(skapaVaraElement(item))); section.appendChild(ul); return section; }
         function hittaVaraIDatabas(text) { const sökTerm = text.trim().toLowerCase(); for (const key in butiksKatalog) { if (sökTerm.includes(key)) { const vara = butiksKatalog[key]; return { ...vara, kategori: kategoriData[vara.kategoriKey] }; } } return { kategoriKey: 'ovrigt', plats: 999, ljud: 'okänd', ljus: 'okänd', tips: 'Egen vara, ingen specifik info finns.', kategori: kategoriData['ovrigt'] }; }
         function getParentCategory(itemId) { const aktivLista = appState.lists[appState.activeListId]; for (const category of aktivLista.categories) { if (category.items.some(item => item.id === itemId)) { return category; } } return null; }
         function skapaKategori(titel = "Ny Kategori") { const aktivLista = appState.lists[appState.activeListId]; const nyKategori = { id: `cat-${Date.now()}`, title: titel, items: [{ id: `item-${Date.now()}`, text: "", checked: false }] }; aktivLista.categories.push(nyKategori); sparaTillstånd(true); render(); setTimeout(() => { const newEl = document.querySelector(`[data-item-id="${nyKategori.items[0].id}"] .item-text`); if(newEl) newEl.focus(); }, 0); }
         function skapaNyVara(currentItemId, afterCurrent = true) { const aktivLista = appState.lists[appState.activeListId]; const parentCategory = getParentCategory(currentItemId); if (!parentCategory) return; const itemIndex = parentCategory.items.findIndex(item => item.id === currentItemId); const nyVara = { id: `item-${Date.now()}`, text: "", checked: false }; const insertIndex = afterCurrent ? itemIndex + 1 : itemIndex; parentCategory.items.splice(insertIndex, 0, nyVara); sparaTillstånd(true); render(); setTimeout(() => { const newEl = document.querySelector(`[data-item-id="${nyVara.id}"] .item-text`); if(newEl) newEl.focus(); }, 0); }
         function raderaVara(itemId) { const aktivLista = appState.lists[appState.activeListId]; aktivLista.categories.forEach(cat => { cat.items = cat.items.filter(item => item.id !== itemId); }); sparaTillstånd(true); render(); }
         function raderaKategori(categoryId) { const aktivLista = appState.lists[appState.activeListId]; aktivLista.categories = aktivLista.categories.filter(cat => cat.id !== categoryId); sparaTillstånd(true); render(); }
-        function toggleListSwitcher() { document.getElementById('list-switcher-menu').classList.toggle('active'); }
-        function renderListSwitcher() { const menu = document.getElementById('list-switcher-menu'); const btn = document.getElementById('list-switcher-btn'); const aktivLista = appState.lists[appState.activeListId]; if (!aktivLista) { btn.textContent = 'Ingen lista vald ▾'; menu.innerHTML = ''; return; } btn.textContent = `${aktivLista.name} ▾`; menu.innerHTML = ''; const andraListor = Object.values(appState.lists).filter(list => list.id !== appState.activeListId); if (andraListor.length > 0) { const vaxlaTitel = document.createElement('div'); vaxlaTitel.textContent = 'Växla till...'; vaxlaTitel.style.cssText = 'padding: 5px 15px; color: #888; font-size: 0.9em;'; menu.appendChild(vaxlaTitel); andraListor.forEach(list => { const lank = document.createElement('a'); lank.textContent = list.name; lank.onclick = () => switchList(list.id); menu.appendChild(lank); }); menu.appendChild(document.createElement('hr')); } const skapaNyLank = document.createElement('a'); skapaNyLank.textContent = '➕ Skapa ny lista...'; skapaNyLank.onclick = createNewList; menu.appendChild(skapaNyLank); const bytNamnLank = document.createElement('a'); bytNamnLank.textContent = '✏️ Byt namn på denna lista...'; bytNamnLank.onclick = renameCurrentList; menu.appendChild(bytNamnLank); menu.appendChild(document.createElement('hr')); const raderaLank = document.createElement('a'); raderaLank.textContent = '🗑️ Radera denna lista...'; raderaLank.style.color = 'var(--danger-color)'; raderaLank.onclick = deleteCurrentList; menu.appendChild(raderaLank); }
+        function toggleListSwitcher() { const btn = document.getElementById('list-switcher-btn'); const menu = document.getElementById('list-switcher-menu'); menu.classList.toggle('active'); btn.setAttribute('aria-expanded', menu.classList.contains('active')); }
+        function renderListSwitcher() { const menu = document.getElementById('list-switcher-menu'); const btn = document.getElementById('list-switcher-btn'); const aktivLista = appState.lists[appState.activeListId]; if (!aktivLista) { btn.textContent = 'Ingen lista vald ▾'; menu.innerHTML = ''; return; } btn.textContent = `${aktivLista.name} ▾`; menu.innerHTML = ''; const andraListor = Object.values(appState.lists).filter(list => list.id !== appState.activeListId); if (andraListor.length > 0) { const vaxlaTitel = document.createElement('div'); vaxlaTitel.textContent = 'Växla till...'; vaxlaTitel.style.cssText = 'padding: 5px 15px; color: #888; font-size: 0.9em;'; menu.appendChild(vaxlaTitel); andraListor.forEach(list => { const lank = document.createElement('a'); lank.textContent = list.name; lank.setAttribute('role', 'menuitem'); lank.onclick = () => switchList(list.id); menu.appendChild(lank); }); menu.appendChild(document.createElement('hr')); } const skapaNyLank = document.createElement('a'); skapaNyLank.textContent = '➕ Skapa ny lista...'; skapaNyLank.setAttribute('role', 'menuitem'); skapaNyLank.onclick = createNewList; menu.appendChild(skapaNyLank); const bytNamnLank = document.createElement('a'); bytNamnLank.textContent = '✏️ Byt namn på denna lista...'; bytNamnLank.setAttribute('role', 'menuitem'); bytNamnLank.onclick = renameCurrentList; menu.appendChild(bytNamnLank); menu.appendChild(document.createElement('hr')); const raderaLank = document.createElement('a'); raderaLank.textContent = '🗑️ Radera denna lista...'; raderaLank.setAttribute('role', 'menuitem'); raderaLank.style.color = 'var(--danger-color)'; raderaLank.onclick = deleteCurrentList; menu.appendChild(raderaLank); }
         function switchList(listId) { appState.activeListId = listId; if(document.getElementById('list-switcher-menu').classList.contains('active')){ toggleListSwitcher(); } bytVy('planering'); renderListSwitcher(); sparaTillstånd(false); }
         function createNewList() { const nyttNamn = prompt("Vad ska den nya listan heta?", "Ny Inköpslista"); if (nyttNamn && nyttNamn.trim()) { const nyId = `list-${Date.now()}`; const nyLista = { id: nyId, name: nyttNamn.trim(), categories: [{ id: `cat-${Date.now()}`, title: "Min Första Kategori", items: [{ id: `item-${Date.now()}`, text: "", checked: false }] }] }; appState.lists[nyId] = nyLista; appState.history[nyId] = [JSON.parse(JSON.stringify(nyLista))]; appState.historyIndex[nyId] = 0; appState.activeListId = nyId; if(document.getElementById('list-switcher-menu').classList.contains('active')){ toggleListSwitcher(); } bytVy('planering'); renderListSwitcher(); sparaTillstånd(false); } }
         function renameCurrentList() { const aktivLista = appState.lists[appState.activeListId]; if (!aktivLista) return; const nyttNamn = prompt("Ange nytt namn för listan:", aktivLista.name); if (nyttNamn && nyttNamn.trim()) { aktivLista.name = nyttNamn.trim(); renderListSwitcher(); sparaTillstånd(true); } if(document.getElementById('list-switcher-menu').classList.contains('active')){ toggleListSwitcher(); } }
