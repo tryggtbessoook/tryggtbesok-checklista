@@ -45,9 +45,10 @@
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
-        /* FIX 1 (SLUTGILTIG METOD): Tom checkbox-behållare. Innehållet styrs 100% av Javascript */
+        /* FIX 1 (SLUTGILTIG METOD): Återgår till ren, robust CSS. Inga prickar. */
         .custom-checkbox { position: relative; width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0; border: 0.15em solid #BDBDBD; border-radius: 0.25em; cursor: pointer; background-color: #fff; }
-        span.checkmark {
+        .custom-checkbox::after {
+            content: '';
             position: absolute;
             top: 45%;
             left: 50%;
@@ -56,9 +57,14 @@
             border: solid var(--primärfärg);
             border-width: 0 0.25em 0.25em 0;
             transform: translate(-50%, -50%) rotate(45deg);
+            opacity: 0; /* Osynlig som standard */
+            transition: opacity 0.1s ease-in-out;
+        }
+        input[type="checkbox"] { opacity: 0; position: absolute; }
+        input[type="checkbox"]:checked + .custom-checkbox::after {
+            opacity: 1; /* Synlig när den är checkad */
         }
         
-        input[type="checkbox"] { opacity: 0; position: absolute; }
         .item-text-wrapper { flex: 1; }
         .item-text { font-size: 1.2em; outline: none; }
         .item-text[data-placeholder]:empty::before { content: attr(data-placeholder); color: #aaa; cursor: text; }
@@ -79,7 +85,6 @@
         .category-header .delete-category-btn { margin-left: 10px; }
         #addCategoryBtn { font-size: 1em; padding: 0.8em 1.2em; margin-top: 1em; cursor: pointer; border: 2px solid var(--accentfärg); background-color: transparent; color: var(--primärfärg); border-radius: var(--ram-radie); font-weight: 600; }
 
-        /* FIX 2 (Mobilanpassning): Garanterar en bra layout på smala skärmar */
         @media (max-width: 650px) {
             .toolbar { flex-direction: column; align-items: stretch; gap: 0.75em; }
             #list-switcher-btn { width: 100%; box-sizing: border-box; }
@@ -102,6 +107,7 @@
         let aktivVy = 'planering';
         let appState = { activeListId: null, lists: {}, history: {}, historyIndex: {} };
 
+        // FIX 1 (NY JAVASCRIPT): Logiken är nu enklare. CSS sköter 100% av det visuella.
         function attachGlobalListeners() {
             const listContainer = document.getElementById('list-container');
             listContainer.addEventListener('click', e => {
@@ -136,8 +142,6 @@
             const category = aktivLista.categories.find(c => c.id === categoryId);
             if (category && category.title !== newTitle) { category.title = newTitle; if (addToHistory) { sparaTillstånd(true); } }
         }
-
-        // FIX 1 (NY JAVASCRIPT): Styr bockens synlighet direkt i DOM
         function toggleVaraChecked(itemId) {
             const aktivLista = appState.lists[appState.activeListId];
             if (!aktivLista) return;
@@ -145,23 +149,10 @@
             for (const category of aktivLista.categories) { const item = category.items.find(i => i.id === itemId); if (item) { item.checked = !item.checked; isCheckedNow = item.checked; break; } }
             sparaTillstånd(true);
             const listItemElem = document.querySelector(`[data-item-id="${itemId}"]`);
-            if (listItemElem) { 
-                const checkboxInput = listItemElem.querySelector('input[type="checkbox"]'); 
-                listItemElem.classList.toggle('checked', isCheckedNow); 
-                if (checkboxInput) { checkboxInput.checked = isCheckedNow; }
-
-                const checkboxLabel = listItemElem.querySelector('.custom-checkbox');
-                const existingCheckmark = checkboxLabel.querySelector('span.checkmark');
-                if (isCheckedNow && !existingCheckmark) {
-                    const checkmark = document.createElement('span');
-                    checkmark.className = 'checkmark';
-                    checkboxLabel.appendChild(checkmark);
-                } else if (!isCheckedNow && existingCheckmark) {
-                    existingCheckmark.remove();
-                }
-            }
+            if (listItemElem) { const checkboxInput = listItemElem.querySelector('input[type="checkbox"]'); listItemElem.classList.toggle('checked', isCheckedNow); if (checkboxInput) { checkboxInput.checked = isCheckedNow; } }
         }
         
+        // Återställd till enklaste formen. Inget skapande av checkmark här.
         function skapaVaraElement(item) {
             const li = document.createElement("li");
             li.className = "list-item";
@@ -183,16 +174,10 @@
                     ${aktivVy === 'butik' ? sensorikHTML : ''}
                 </div>
                 ${aktivVy === 'butik' && harSensorik ? `<div class="item-detaljer"><p><strong>Tips:</strong> ${varaData.tips}</p></div>` : ''}
-                <button class="delete-btn delete-item-btn" style="display: ${aktivVy === 'planering' ? 'block' : 'none'};" aria-label="Radera vara"></button>
+                <button class="delete-btn delete-item-btn" style="display: ${aktivVy === 'planering' ? 'block' : 'none'};" aria-label="Radera vara">×</button>
             `;
             const deleteBtn = li.querySelector('.delete-item-btn');
             if (deleteBtn) deleteBtn.innerHTML = '×';
-
-            if (item.checked) {
-                const checkmark = document.createElement('span');
-                checkmark.className = 'checkmark';
-                li.querySelector('.custom-checkbox').appendChild(checkmark);
-            }
             return li;
         }
 
