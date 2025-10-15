@@ -44,20 +44,27 @@
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
-        /* FIX 1 (SLUTGILTIG METOD): Behållaren är tom. Javascript skapar bocken. */
-        .custom-checkbox { position: relative; width: 2.8em; height: 2.8em; margin-right: 1em; flex-shrink: 0; border: 0.15em solid #BDBDBD; border-radius: 0.25em; cursor: pointer; background-color: #fff; }
-        span.checkmark {
-            position: absolute;
-            top: 45%;
-            left: 50%;
-            width: 0.6em;
-            height: 1.2em;
-            border: solid var(--primärfärg);
-            border-width: 0 0.25em 0.25em 0;
-            transform: translate(-50%, -50%) rotate(45deg);
+        /* FIX 1 (GARANTERAD METOD): Använder en SVG som bakgrundsbild, vilket är bombsäkert. */
+        .custom-checkbox {
+            position: relative;
+            width: 2.8em;
+            height: 2.8em;
+            margin-right: 1em;
+            flex-shrink: 0;
+            border: 0.15em solid #BDBDBD;
+            border-radius: 0.25em;
+            cursor: pointer;
+            background-color: #fff;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 60%;
+        }
+        input[type="checkbox"] { opacity: 0; position: absolute; }
+        input[type="checkbox"]:checked + .custom-checkbox {
+            /* Denna SVG-kod är en URL-kodad version av bocken. Detta kringgår renderingsbuggar. */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolyline points='20 60 40 80 80 30' fill='none' stroke='%2301285C' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
         
-        input[type="checkbox"] { opacity: 0; position: absolute; }
         .item-text-wrapper { flex: 1; }
         .item-text { font-size: 1.2em; outline: none; }
         .item-text[data-placeholder]:empty::before { content: attr(data-placeholder); color: #aaa; cursor: text; }
@@ -79,7 +86,7 @@
             justify-content: center;
             width: 30px;
             height: 30px;
-            flex-shrink: 0; /* Förhindrar att den kläms ihop */
+            flex-shrink: 0;
             border-radius: 50%;
             border: none;
             background-color: #f1f1f1;
@@ -166,8 +173,6 @@
                 const category = aktivLista.categories.find(c => c.id === categoryId);
                 if (category && category.title !== newTitle) { category.title = newTitle; if (addToHistory) { sparaTillstånd(true); } }
             }
-            
-            // FIX 1 (NY JAVASCRIPT): Styr bockens synlighet direkt i DOM
             function toggleVaraChecked(itemId) {
                 const aktivLista = appState.lists[appState.activeListId];
                 if (!aktivLista) return;
@@ -175,23 +180,8 @@
                 for (const category of aktivLista.categories) { const item = category.items.find(i => i.id === itemId); if (item) { item.checked = !item.checked; isCheckedNow = item.checked; break; } }
                 sparaTillstånd(true);
                 const listItemElem = container.querySelector(`[data-item-id="${itemId}"]`);
-                if (listItemElem) { 
-                    const checkboxInput = listItemElem.querySelector('input[type="checkbox"]'); 
-                    listItemElem.classList.toggle('checked', isCheckedNow); 
-                    if (checkboxInput) { checkboxInput.checked = isCheckedNow; }
-
-                    const checkboxLabel = listItemElem.querySelector('.custom-checkbox');
-                    const existingCheckmark = checkboxLabel.querySelector('span.checkmark');
-                    if (isCheckedNow && !existingCheckmark) {
-                        const checkmark = document.createElement('span');
-                        checkmark.className = 'checkmark';
-                        checkboxLabel.appendChild(checkmark);
-                    } else if (!isCheckedNow && existingCheckmark) {
-                        existingCheckmark.remove();
-                    }
-                }
+                if (listItemElem) { const checkboxInput = listItemElem.querySelector('input[type="checkbox"]'); listItemElem.classList.toggle('checked', isCheckedNow); if (checkboxInput) { checkboxInput.checked = isCheckedNow; } }
             }
-            
             function skapaVaraElement(item) {
                 const li = document.createElement("li");
                 li.className = "list-item";
@@ -215,15 +205,8 @@
                     ${aktivVy === 'butik' && harSensorik ? `<div class="item-detaljer"><p><strong>Tips:</strong> ${varaData.tips}</p></div>` : ''}
                     <button class="delete-btn delete-item-btn" style="display: ${aktivVy === 'planering' ? 'block' : 'none'};" aria-label="Radera vara">×</button>
                 `;
-
-                if (item.checked) {
-                    const checkmark = document.createElement('span');
-                    checkmark.className = 'checkmark';
-                    li.querySelector('.custom-checkbox').appendChild(checkmark);
-                }
                 return li;
             }
-
             function sparaTillstånd(addHistory = false) { const aktivListaId = appState.activeListId; if (!aktivListaId) return; const currentState = JSON.parse(JSON.stringify(appState.lists[aktivListaId])); if (addHistory) { appState.historyIndex[aktivListaId]++; appState.history[aktivListaId].splice(appState.historyIndex[aktivListaId]); appState.history[aktivListaId].push(currentState); } localStorage.setItem(MULTILIST_STORAGE_KEY, JSON.stringify(appState)); uppdateraUndoRedoKnappar(); }
             function undo() { const aktivListaId = appState.activeListId; if (appState.historyIndex[aktivListaId] > 0) { appState.historyIndex[aktivListaId]--; const föregåendeTillstånd = JSON.parse(JSON.stringify(appState.history[aktivListaId][appState.historyIndex[aktivListaId]])); appState.lists[aktivListaId] = föregåendeTillstånd; render(); sparaTillstånd(false); } }
             function redo() { const aktivListaId = appState.activeListId; if (appState.historyIndex[aktivListaId] < appState.history[aktivListaId].length - 1) { appState.historyIndex[aktivListaId]++; const nästaTillstånd = JSON.parse(JSON.stringify(appState.history[aktivListaId][appState.historyIndex[aktivListaId]])); appState.lists[aktivListaId] = nästaTillstånd; render(); sparaTillstånd(false); } }
@@ -237,7 +220,7 @@
             function skapaKategori(titel = "Ny Kategori") { const aktivLista = appState.lists[appState.activeListId]; const nyKategori = { id: `cat-${Date.now()}`, title: titel, items: [{ id: `item-${Date.now()}`, text: "", checked: false }] }; aktivLista.categories.push(nyKategori); sparaTillstånd(true); render(); setTimeout(() => { const newEl = container.querySelector(`[data-item-id="${nyKategori.items[0].id}"] .item-text`); if(newEl) newEl.focus(); }, 0); }
             function skapaNyVara(currentItemId, afterCurrent = true) { const aktivLista = appState.lists[appState.activeListId]; const parentCategory = getParentCategory(currentItemId); if (!parentCategory) return; const itemIndex = parentCategory.items.findIndex(item => item.id === currentItemId); const nyVara = { id: `item-${Date.now()}`, text: "", checked: false }; const insertIndex = afterCurrent ? itemIndex + 1 : itemIndex; parentCategory.items.splice(insertIndex, 0, nyVara); sparaTillstånd(true); render(); setTimeout(() => { const newEl = container.querySelector(`[data-item-id="${nyVara.id}"] .item-text`); if(newEl) newEl.focus(); }, 0); }
             function raderaVara(itemId) { const aktivLista = appState.lists[appState.activeListId]; aktivLista.categories.forEach(cat => { cat.items = cat.items.filter(item => item.id !== itemId); }); sparaTillstånd(true); render(); }
-            function raderaKategori(categoryId) { const aktivLista = appState.lists[appState.activeListId]; aktivLista.categories = aktivLista.categories.filter(cat => cat.id !== categoryId); sparaTillstånd(true); render(); }
+            function raderaKategori(categoryId) { const aktivLista = appState.lists[appState.activeListId]; aktivLista.categories.forEach(cat => { cat.items = cat.items.filter(cat => cat.id !== categoryId); }); sparaTillstånd(true); render(); }
             function toggleListSwitcher() { const btn = container.querySelector('#list-switcher-btn'); const menu = container.querySelector('#list-switcher-menu'); menu.classList.toggle('active'); btn.setAttribute('aria-expanded', menu.classList.contains('active')); }
             function renderListSwitcher() { const menu = container.querySelector('#list-switcher-menu'); const btn = container.querySelector('#list-switcher-btn'); if (!menu) return; const aktivLista = appState.lists[appState.activeListId]; if (!aktivLista) { btn.textContent = 'Ingen lista vald ▾'; menu.innerHTML = ''; return; } btn.textContent = `${aktivLista.name} ▾`; menu.innerHTML = ''; const andraListor = Object.values(appState.lists).filter(list => list.id !== appState.activeListId); if (andraListor.length > 0) { const vaxlaTitel = document.createElement('div'); vaxlaTitel.textContent = 'Växla till...'; vaxlaTitel.style.cssText = 'padding: 5px 15px; color: #888; font-size: 0.9em;'; menu.appendChild(vaxlaTitel); andraListor.forEach(list => { const lank = document.createElement('a'); lank.textContent = list.name; lank.setAttribute('role', 'menuitem'); lank.onclick = (e) => { e.stopPropagation(); switchList(list.id); }; menu.appendChild(lank); }); menu.appendChild(document.createElement('hr')); } const skapaNyLank = document.createElement('a'); skapaNyLank.textContent = '➕ Skapa ny lista...'; skapaNyLank.setAttribute('role', 'menuitem'); skapaNyLank.onclick = (e) => { e.stopPropagation(); createNewList(); }; menu.appendChild(skapaNyLank); const bytNamnLank = document.createElement('a'); bytNamnLank.textContent = '✏️ Byt namn på denna lista...'; bytNamnLank.setAttribute('role', 'menuitem'); bytNamnLank.onclick = (e) => { e.stopPropagation(); renameCurrentList(); }; menu.appendChild(bytNamnLank); menu.appendChild(document.createElement('hr')); const raderaLank = document.createElement('a'); raderaLank.textContent = '🗑️ Radera denna lista...'; raderaLank.setAttribute('role', 'menuitem'); raderaLank.style.color = 'var(--danger-color)'; raderaLank.onclick = (e) => { e.stopPropagation(); deleteCurrentList(); }; menu.appendChild(raderaLank); }
             function switchList(listId) { appState.activeListId = listId; if(container.querySelector('#list-switcher-menu').classList.contains('active')){ toggleListSwitcher(); } bytVy('planering'); renderListSwitcher(); sparaTillstånd(false); }
