@@ -1,5 +1,9 @@
 {
+  "name": "tryggtbesok-api",
+  "version": "1.0.0",
+  "description": "API function for TryggtBesok using Azure",
+  "main": "api/process-list.js",
   "dependencies": {
-    "openai": "^4.52.7"
+    "@azure/openai": "^1.0.0-beta.12"
   }
 }
