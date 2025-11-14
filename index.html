@@ -44,7 +44,6 @@
         .item-header { display: flex; align-items: center; }
         li.list-item.checked .item-text { text-decoration: line-through; opacity: 0.6; }
 
-        /* NPF-FIX: Tydlig fokus-markering */
         [contenteditable="true"]:focus {
             box-shadow: 0 0 0 2px var(--primärfärg);
             border-radius: 3px;
@@ -64,11 +63,11 @@
             background-repeat: no-repeat;
             background-position: center;
             background-size: 60%;
-            transition: background-image 0s; /* Ingen fördröjning */
+            /* VIKTIGT: Ingen background-image här i grundläget */
         }
         input[type="checkbox"] { opacity: 0; position: absolute; }
         input[type="checkbox"]:checked + .custom-checkbox {
-            /* Denna SVG-kod är en URL-kodad version av bocken. Detta kringgår renderingsbuggar. */
+            /* KORRIGERING: Bakgrundsbilden läggs TILL ENDAST när den är :checked */
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolyline points='20 60 40 80 80 30' fill='none' stroke='%2301285C' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
         }
         
@@ -129,7 +128,6 @@
             const container = document.querySelector('.tryggtbesok-container');
             if (!container) return;
             
-            // FIX: Uppdaterade färger från din Canva-palett
             const kategoriData = {
                 'frukt_gront': { namn: 'Frukt & Grönt', nummer: 1, färg: '#AEC09A' },
                 'brod_bageri': { namn: 'Bageri', nummer: 2, färg: '#E9D5C4' },
@@ -250,7 +248,7 @@
                 const aktivLista = appState.lists[appState.activeListId];
                 const categoryIndex = aktivLista.categories.findIndex(cat => cat.id === categoryId);
                 if (categoryIndex === -1) return;
-                const itemsToSave = aktivLista.categories[categoryIndex].items.filter(item => item.text.trim() !== "");
+                const itemsToSave = aktivLista.categories[categoryIndex].items.filter(item => item.text && item.text.trim() !== "" && item.text.trim() !== "Skriv en vara...");
                 if (itemsToSave.length > 0) {
                     let ovrigtCategory = aktivLista.categories.find(cat => cat.title.toLowerCase() === "övrigt");
                     if (!ovrigtCategory) {
@@ -272,7 +270,7 @@
             function renameCurrentList() { const aktivLista = appState.lists[appState.activeListId]; if (!aktivLista) return; const nyttNamn = prompt("Ange nytt namn för listan:", aktivLista.name); if (nyttNamn && nyttNamn.trim()) { aktivLista.name = nyttNamn.trim(); renderListSwitcher(); sparaTillstånd(true); } if(container.querySelector('#list-switcher-menu').classList.contains('active')){ toggleListSwitcher(); } }
             function deleteCurrentList() { const aktivLista = appState.lists[appState.activeListId]; if (Object.keys(appState.lists).length <= 1) { alert("Du kan inte radera den sista listan."); toggleListSwitcher(); return; } if (confirm(`Är du säker på att du vill radera listan "${aktivLista.name}"? Detta kan inte ångras.`)) { const aktivId = appState.activeListId; delete appState.lists[aktivId]; delete appState.history[aktivId]; delete appState.historyIndex[aktivId]; const firstRemainingListId = Object.keys(appState.lists)[0]; appState.activeListId = firstRemainingListId; if(container.querySelector('#list-switcher-menu').classList.contains('active')){ toggleListSwitcher(); } bytVy('planering'); renderListSwitcher(); sparaTillstånd(false); } }
             function init() { const sparadData = localStorage.getItem(MULTILIST_STORAGE_KEY); if (sparadData) { try { appState = JSON.parse(sparadData); } catch (e) { appState = {}; } } if (!appState || !appState.lists || Object.keys(appState.lists).length === 0) { const defaultListId = `list-default`; const defaultList = { id: defaultListId, name: "Min Inköpslista", categories: [{ id: `cat-default`, title: "Varor", items: [{ id: `item-default`, text: "Mjölk", checked: false }, { id: `item-default-2`, text: "Bröd", checked: false }] }] }; appState = { activeListId: defaultListId, lists: { [defaultListId]: defaultList }, history: { [defaultListId]: [JSON.parse(JSON.stringify(defaultList))] }, historyIndex: { [defaultListId]: 0 } }; } for (const listId in appState.lists) { if (!appState.history || !appState.history[listId]) { appState.history = appState.history || {}; appState.historyIndex = appState.historyIndex || {}; appState.history[listId] = [JSON.parse(JSON.stringify(appState.lists[listId]))]; appState.historyIndex[listId] = 0; } } attachGlobalListeners(); bytVy('planering'); renderListSwitcher(); }
-            async function hanteraMagiskLista() { const textArea = container.querySelector('#ai-input'); const processBtn = container.querySelector('#ai-process-btn'); if(!textArea || !processBtn) return; const userInput = textArea.value; if (!userInput.trim()) return; processBtn.disabled = true; processBtn.textContent = 'Tänker...'; try { const response = await fetch('/.netlify/functions/process-list', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: userInput }) }); if (!response.ok) { throw new Error('Nätverksfel vid anrop till Magisk Lista.'); } const varor = await response.json(); const aktivLista = appState.lists[appState.activeListId]; let targetCategory = aktivLista.categories[0]; if (!targetCategory) { skapaKategori("Importerad Lista"); targetCategory = aktivLista.categories[0]; } varor.forEach(varaText => { targetCategory.items.push({ id: `item-${Date.now()}-${Math.random()}`, text: varaText, checked: false }); }); targetCategory.items = targetCategory.items.filter(item => item.text.trim() !== ""); sparaTillstånd(true); render(); } catch (error) { console.error('Fel:', error); alert('Kunde inte skapa listan: ' + error.message); } finally { processBtn.disabled = false; processBtn.textContent = 'Skapa lista'; textArea.value = ''; } }
+            async function hanteraMagiskLista() { const textArea = container.querySelector('#ai-input'); const processBtn = container.querySelector('#ai-process-btn'); if(!textArea || !processBtn) return; const userInput = textArea.value; if (!userInput.trim()) return; processBtn.disabled = true; processBtn.textContent = 'Tänker...'; try { const response = await fetch('/.netlify/functions/process-list', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: userInput }) }); if (!response.ok) { throw new Error('Nätverksfel vid anrop till Magisk Lista.'); } const varor = await response.json(); const aktivLista = appState.lists[appState.activeListId]; let targetCategory = aktivLista.categories[0]; if (!targetCategory) { skapaKategori("Importerad Lista"); targetCategory = aktivLista.categories[0]; } varor.forEach(varaText => { targetCategory.items.push({ id: `item-${Date.now()}-${Math.random()}`, text: varaText, checked: false }); }); targetCategory.items = targetCategory.items.filter(item => item.text.trim() !== "" && item.text.trim() !== "Skriv en vara..."); sparaTillstånd(true); render(); } catch (error) { console.error('Fel:', error); alert('Kunde inte skapa listan: ' + error.message); } finally { processBtn.disabled = false; processBtn.textContent = 'Skapa lista'; textArea.value = ''; } }
             if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW Registered!', reg), err => console.log('SW reg failed: ', err)); }); }
 
             init();
