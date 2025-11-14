@@ -49,28 +49,29 @@
             border-radius: 3px;
         }
 
-        /* FIX 1 (GARANTERAD METOD): Använder en SVG som bakgrundsbild, vilket är bombsäkert. */
-        .custom-checkbox {
-            position: relative;
+        /* FIX 1 (SLUTGILTIG METOD): Inbäddad SVG. Vi ändrar BARA färg. */
+        label.custom-checkbox {
             width: 2.8em;
             height: 2.8em;
             margin-right: 1em;
             flex-shrink: 0;
-            border: 0.15em solid #BDBDBD;
-            border-radius: 0.25em;
             cursor: pointer;
-            background-color: #fff;
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 60%;
-            /* VIKTIGT: Ingen background-image här i grundläget */
         }
-        input[type="checkbox"] { opacity: 0; position: absolute; }
-        input[type="checkbox"]:checked + .custom-checkbox {
-            /* KORRIGERING: Bakgrundsbilden läggs TILL ENDAST när den är :checked */
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolyline points='20 60 40 80 80 30' fill='none' stroke='%2301285C' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        .custom-checkbox svg {
+            width: 100%;
+            height: 100%;
+        }
+        /* Bocken (path) är osynlig som standard */
+        .custom-checkbox .checkmark-path {
+            stroke: transparent; /* HELT GENOMSKINLIG */
+            transition: stroke 0.1s ease-in-out;
+        }
+        /* När checkboxen är :checked, ändra färgen på bocken */
+        input[type="checkbox"]:checked + label.custom-checkbox .checkmark-path {
+            stroke: var(--primärfärg); /* Synlig */
         }
         
+        input[type="checkbox"] { opacity: 0; position: absolute; }
         .item-text-wrapper { flex: 1; }
         .item-text { font-size: 1.2em; outline: none; }
         .item-text[data-placeholder]:empty::before { content: attr(data-placeholder); color: #aaa; cursor: text; }
@@ -128,16 +129,17 @@
             const container = document.querySelector('.tryggtbesok-container');
             if (!container) return;
             
+            // FÄRGER UPPDATERADE ENLIGT DIN BILD
             const kategoriData = {
                 'frukt_gront': { namn: 'Frukt & Grönt', nummer: 1, färg: '#AEC09A' },
                 'brod_bageri': { namn: 'Bageri', nummer: 2, färg: '#E9D5C4' },
-                'skafferi': { namn: 'Skafferi', nummer: 3, färg: '#DCAE96' },
-                'kott_fisk': { namn: 'Kött, Fisk & Chark', nummer: 4, färg: '#DCAE96' },
+                'skafferi': { namn: 'Skafferi', nummer: 3, färg: '#DCAE96' }, // Använder "Kryddor" för Skafferi
+                'kott_fisk': { namn: 'Kött, Fisk & Chark', nummer: 4, färg: '#D0A0A0' }, // Använder "Snacks" för Chark
                 'mejeri_kylt': { namn: 'Mejeri & Kylt', nummer: 5, färg: '#A6C5C5' },
                 'frys': { namn: 'Frysdisken', nummer: 6, färg: '#A3B5C9' },
-                'dryck': { namn: 'Drycker', nummer: 7, färg: '#FEF7B5' },
+                'dryck': { namn: 'Drycker', nummer: 7, färg: '#FEF7B5' }, // Använder "Kassor" för Dryck
                 'snacks_godis': { namn: 'Snacks & Godis', nummer: 8, färg: '#E4C7C7' },
-                'hem_hygien': { namn: 'Hem & Hygien', nummer: 9, färg: '#E4C7C7' },
+                'hem_hygien': { namn: 'Hem & Hygien', nummer: 9, färg: '#D9D9D9' }, // Använder "Entre"
                 'ovrigt': { namn: 'Övrigt', nummer: 99, färg: '#D9D9D9' }
             };
 
@@ -173,6 +175,7 @@
                         }
                     }
                 });
+                // FIX: Klicka-bort-meny
                 document.addEventListener('click', function(e) {
                     const menu = container.querySelector('#list-switcher-menu');
                     const btn = container.querySelector('#list-switcher-btn');
@@ -202,6 +205,7 @@
                 if (listItemElem) { const checkboxInput = listItemElem.querySelector('input[type="checkbox"]'); listItemElem.classList.toggle('checked', isCheckedNow); if (checkboxInput) { checkboxInput.checked = isCheckedNow; } }
             }
             
+            // FIX 1: Bygger en komplett SVG med Javascript, vilket är mer stabilt.
             function skapaVaraElement(item) {
                 const li = document.createElement("li");
                 li.className = "list-item";
@@ -215,10 +219,20 @@
                 const checkboxId = `checkbox-${item.id}`;
                 const nummerHTML = varaData.kategori && aktivVy === 'butik' ? `<div class="vara-nummer" style="background-color: ${kategoriFärg};"><span>${varaData.kategori.nummer}</span></div>` : '';
                 
+                // Hela SVG:n som en textsträng. Bombsäker.
+                const svgIcon = `
+                    <svg viewBox="0 0 100 100">
+                        <rect x="5" y="5" width="90" height="90" rx="10" ry="10" stroke="#BDBDBD" stroke-width="8" fill="#fff" />
+                        <polyline class="checkmark-path" points="20 60 40 80 80 30" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                `;
+
                 li.innerHTML = `
                     <div class="item-header">
                         <input type="checkbox" id="${checkboxId}" ${item.checked ? 'checked' : ''} aria-labelledby="item-text-${item.id}">
-                        <label for="${checkboxId}" class="custom-checkbox"></label>
+                        <label for="${checkboxId}" class="custom-checkbox">
+                            ${svgIcon}
+                        </label>
                         ${nummerHTML}
                         <div class="item-text-wrapper"> <div id="item-text-${item.id}" contenteditable="${aktivVy === 'planering'}" class="item-text" data-placeholder="Skriv en vara...">${item.text}</div> </div>
                         ${aktivVy === 'butik' ? sensorikHTML : ''}
@@ -234,7 +248,7 @@
             function redo() { const aktivListaId = appState.activeListId; if (appState.historyIndex[aktivListaId] < appState.history[aktivListaId].length - 1) { appState.historyIndex[aktivListaId]++; const nästaTillstånd = JSON.parse(JSON.stringify(appState.history[aktivListaId][appState.historyIndex[aktivListaId]])); appState.lists[aktivListaId] = nästaTillstånd; render(); sparaTillstånd(false); } }
             function uppdateraUndoRedoKnappar() { const undoBtn = container.querySelector('#undoBtn'); const redoBtn = container.querySelector('#redoBtn'); const aktivListaId = appState.activeListId; if (!aktivListaId || !undoBtn) return; undoBtn.classList.toggle('disabled', appState.historyIndex[aktivListaId] <= 0); redoBtn.classList.toggle('disabled', appState.historyIndex[aktivListaId] >= appState.history[aktivListaId].length - 1); }
             function bytVy(vy) { const planeringsvyBtn = container.querySelector('#planeringsvyBtn'); if (!planeringsvyBtn) return; aktivVy = vy; planeringsvyBtn.classList.toggle('active', vy === 'planering'); container.querySelector('#butiksvyBtn').classList.toggle('active', vy === 'butik'); render(); }
-            function render() { const listContainer = container.querySelector('#list-container'); if (!listContainer) return; listContainer.innerHTML = ''; const aktivLista = appState.lists[appState.activeListId]; if (!aktivLista) { uppdateraRedigeringsläge(); return; } if (aktivVy === 'planering') { aktivLista.categories.forEach(kategori => { listContainer.appendChild(skapaKategoriElement(kategori)); }); } else { let allaVaror = []; aktivLista.categories.forEach(kategori => { kategori.items.forEach(item => { const varaData = hittaVaraIDatabas(item.text); allaVaror.push({ ...varaData, text: item.text, checked: item.checked, id: item.id }); }); }); allaVaror.sort((a, b) => { const katANum = a.kategori ? a.kategori.nummer : 999; const katBNum = b.kategori ? b.kategori.nummer : 999; if (katANum !== katBNum) return katANum - katBNum; return a.plats - b.plats; }); let nuvarandeKategoriNummer = -1; allaVaror.forEach(vara => { if (vara.kategori && vara.kategori.nummer !== nuvarandeKategoriNummer) { nuvarandeKategoriNummer = vara.kategori.nummer; const kategoriRubrik = document.createElement('h2'); kategoriRubrik.className = 'kategori-rubrik'; kategoriRubrik.textContent = `${vara.kategori.nummer}. ${vara.kategori.namn}`; kategoriRubrik.style.cssText = `background-color:${vara.kategori.färg}; color:white; padding:8px 15px; border-radius:var(--ram-radie); margin-top:2.5em;`; listContainer.appendChild(kategoriRubrik); } listContainer.appendChild(skapaVaraElement(vara)); }); } uppdateraRedigeringsläge(); uppdateraUndoRedoKnappar(); }
+            function render() { const listContainer = container.querySelector('#list-container'); if (!listContainer) return; listContainer.innerHTML = ''; const aktivLista = appState.lists[appState.activeListId]; if (!aktivLista) { uppdateraRedigeringsläge(); return; } if (aktivVy === 'planering') { aktivLista.categories.forEach(kategori => { listContainer.appendChild(skapaKategoriElement(kategori)); }); } else { let allaVaror = []; aktivLista.categories.forEach(kategori => { kategori.items.forEach(item => { const varaData = hittaVaraIDatabas(item.text); allaVaror.push({ ...varaData, text: item.text, checked: item.checked, id: item.id }); }); }); allaVaror.sort((a, b) => { const katANum = a.kategori ? a.kategori.nummer : 999; const katBNum = b.kategori ? b.kategori.nummer : 999; if (katANum !== katBNum) return katANum - katBNum; return a.plats - b.plats; }); let nuvarandeKategoriNummer = -1; allaVaror.forEach(vara => { if (vara.kategori && vara.kategori.nummer !== nuvarandeKategoriNummer) { nuvarandeKategoriNummer = vara.kategori.nummer; const kategoriRubrik = document.createElement('h2'); kategoriRubrik.className = 'kategori-rubrik'; kategoriRubrik.textContent = `${vara.kategori.nummer}. ${vara.kategori.namn}`; kategoriRubrik.style.cssText = `background-color:${vara.kategori.färg}; color: ${['#FEF7B5', '#E9D5C4'].includes(vara.kategori.färg) ? '#212529' : 'white'}; padding:8px 15px; border-radius:var(--ram-radie); margin-top:2.5em;`; listContainer.appendChild(kategoriRubrik); } listContainer.appendChild(skapaVaraElement(vara)); }); } uppdateraRedigeringsläge(); uppdateraUndoRedoKnappar(); }
             function uppdateraRedigeringsläge() { const addCategoryBtn = container.querySelector('#addCategoryBtn'); if (!addCategoryBtn) return; addCategoryBtn.style.display = aktivVy === 'planering' ? 'block' : 'none'; container.querySelector('.undo-redo-controls').style.display = aktivVy === 'planering' ? 'flex' : 'none'; container.querySelector('.ai-importer').style.display = aktivVy === 'planering' ? 'block' : 'none'; }
             function skapaKategoriElement(kategori) { const section = document.createElement("section"); section.dataset.categoryId = kategori.id; const header = document.createElement('div'); header.className = 'category-header'; const h2 = document.createElement('h2'); h2.textContent = kategori.title; h2.contentEditable = aktivVy === 'planering'; header.appendChild(h2); const deleteBtn = document.createElement('button'); deleteBtn.className = 'delete-btn delete-category-btn'; deleteBtn.innerHTML = '×'; deleteBtn.style.display = aktivVy === 'planering' ? 'inline-block' : 'none'; deleteBtn.setAttribute('aria-label', `Radera kategori ${kategori.title}`); header.appendChild(deleteBtn); section.appendChild(header); const ul = document.createElement('ul'); kategori.items.forEach(item => ul.appendChild(skapaVaraElement(item))); section.appendChild(ul); return section; }
             function hittaVaraIDatabas(text) { const sökTerm = text.trim().toLowerCase(); for (const key in butiksKatalog) { if (sökTerm.includes(key)) { const vara = butiksKatalog[key]; return { ...vara, kategori: kategoriData[vara.kategoriKey] }; } } return { kategoriKey: 'ovrigt', plats: 999, ljud: 'okänd', ljus: 'okänd', tips: 'Egen vara, ingen specifik info finns.', kategori: kategoriData['ovrigt'] }; }
@@ -246,6 +260,7 @@
             // NPF-FIX: "Säker" radering. Flyttar varor till "Övrigt".
             function raderaKategori(categoryId) {
                 const aktivLista = appState.lists[appState.activeListId];
+                if (!aktivLista) return;
                 const categoryIndex = aktivLista.categories.findIndex(cat => cat.id === categoryId);
                 if (categoryIndex === -1) return;
                 const itemsToSave = aktivLista.categories[categoryIndex].items.filter(item => item.text && item.text.trim() !== "" && item.text.trim() !== "Skriv en vara...");
